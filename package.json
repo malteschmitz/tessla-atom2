@@ -7,7 +7,7 @@
   "activationCommands": {
     "atom-workspace": "tessla:toggle"
   },
-  "repository": "https://github.com/atom/tessla",
+  "repository": "https://github.com/dmlux/TeSSLa",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"

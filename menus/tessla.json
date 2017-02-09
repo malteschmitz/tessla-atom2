@@ -9,10 +9,6 @@
         "command": "tessla:toggle"
       },
       {
-        "label": "Set Up TeSSLa split-view",
-        "command": "tessla:set-up-split-view"
-      },
-      {
         "type": "separator"
       }
     ]
@@ -22,7 +18,7 @@
       "label": "Packages",
       "submenu": [
         {
-          "label": "tessla",
+          "label": "TeSSLa",
           "submenu": [
             {
               "label": "Toggle",
