@@ -1,0 +1,84 @@
+'scopeName': 'tessla'
+'name': 'TeSSLa'
+'fileTypes': [
+  'tessla'
+]
+'patterns': [
+  {
+    'comment': 'Library functions'
+    'match': '\\b(on|if|yield|monitor|onYield|onIf|signalMaximum|eventMaximum|signalMinimum|eventMinimum|delay|synchronise|flatSynchronise|getRight|getLeft|get|timeout|changeOf|ifThen|sample|filter|ifThenElse|merge|occurAny|occurAll|timestamp|timestamps|add|sub|mul|div|ge|geq|leq|eq|max|min|abs|and|or|implies|not|maximum|minimum|sum|eventCount|mrv|neg|sma|gt|lt|intruction_executions|function_returns|function_calls|variable_values|signalAbs|eventAbs|changeOf|signalNot|eventNot|constantSignal|literal)\\b'
+    'name': 'support.function'
+  },
+  {
+    'comment': 'Language constants'
+    'match': '\\b(true|false|True|False|TRUE|FALSE)\\b'
+    'name': 'constant.language'
+  },
+  {
+    'comment': 'Numeric floating point values'
+    'match': '[^a-zA-Z]([+-]?\\d+(?:\\.\\d+)?)'
+    'captures':
+      1:
+        'name': 'constant.numeric'
+  },
+  {
+    'comment': 'Keywords'
+    'match': '\\b(out)\\b'
+    'name': 'keyword.other'
+  },
+  {
+    'comment': 'Datatypes'
+    'match': '\\b(Signal|Event|Events|Int|Float|String|Boolean|Bool|Unit)\\b'
+    'name': 'storage.type'
+  },
+  {
+    'comment': 'Assignment operator'
+    'match': '\:\='
+    'name': 'keyword.operator.assignment'
+  },
+  {
+    'comment': 'Variable names'
+    'match': '(define)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\:)'
+    'captures':
+      1:
+        'name': 'keyword.other'
+      2:
+        'name': 'variable.other'
+  },
+  {
+    'comment': 'Function names'
+    'begin': '(define)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\()'
+    'beginCaptures':
+      1:
+        'name': 'keyword.other'
+      2:
+        'name': 'entity.name.function'
+    'patterns': [
+      {
+        'comment': 'Function parameters'
+        'match': '([\\w\\d\\_]+)\\s*(?=\\,|\\))'
+        'captures':
+          1:
+            'name': 'variable.parameter'
+      }
+    ]
+    'end': '\\)\\s*(\\:\\=)'
+    'endCaptures':
+      1:
+        'name': 'keyword.operator.assignment'
+  },
+  {
+    'comment': 'In-streams'
+    'match': '(in)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\:[^\\=])'
+    'captures':
+      1:
+        'name': 'keyword.other'
+      2:
+        'name': 'variable.other'
+  },
+  {
+    'comment': 'In-line comments'
+    'match': '\-\-.*'
+    'name': 'comment.line.double-dash'
+  }
+]
