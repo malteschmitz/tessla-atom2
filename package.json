@@ -2,8 +2,12 @@
   "name": "tessla",
   "main": "./lib/tessla",
   "version": "0.0.0",
-  "description": "A short description of your package",
-  "keywords": [],
+  "description": "Package providing IDE functions for C code and the TeSSLa temporal logic",
+  "keywords": [
+    "tessla",
+    "tessla-ide",
+    "ide"
+  ],
   "activationCommands": {
     "atom-workspace": "tessla:toggle"
   },
