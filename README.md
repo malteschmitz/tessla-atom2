@@ -19,7 +19,7 @@ Dependencies that are needed to fully use this packages can be found here:
 
 <img align="left" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/sidebar.png">
 
-The functions sidebar is divided into two seperate areas. 
+The functions sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance. 
 
 The upper area shows C functions that appear in the C files and C functions that are observed from within the TeSSLa sources of the current project. Each C file that can be found recursively in the current project directory is considered when fetching function singnatures. On the other hand only the first found TeSSLa source file is used by the IDE.
 
