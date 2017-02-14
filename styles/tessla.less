@@ -129,25 +129,249 @@
   clear: both;
 }
 
-#tessla-functions-sidebar {
+/** TeSSLa functions sidebar **/
+#tessla-sidebar-wrapper {
   position: relative;
-  dislpay: block;
+  overflow-y: hidden;
   width: 230px;
   min-width: 120px;
   max-width: 300px;
   height: 100%;
   background: @app-background-color;
-  padding: 0px;
-  margin: 0px;
-  padding-left: 10px;
   font-family: @font-family;
-  overflow-y: auto;
   -webkit-user-select: none;
-  border: 0px;
+  z-index: 0;
+
+  div.resizer {
+    position: absolute;
+    background: transparent;
+    width: 15px;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    cursor: col-resize;
+    z-index: 100;
+  }
+
+  .vertical-resizer {
+    position: relative;
+    background: transparent;
+    height: 15px;
+    width: 100%;
+    margin-left: 15px;
+    margin-bottom: -15px;
+    cursor: row-resize;
+    z-index: 100;
+  }
 }
 
-#tessla-table-view > div.resizer,
-#tessla-functions-sidebar > div.resizer {
+#tessla-table-view {
+  position: relative;
+  display: block;
+  padding: 5px 0px 10px 10px;
+  margin: 0px;
+  border-top: 1px solid @base-border-color;
+  z-index: 0;
+  overflow-y: auto;
+
+  ul > li.hint {
+    color: @text-color-subtle;
+    font-style: italic;
+    text-align: center;
+    cursor: default;
+  }
+
+  ul.list-formatted-output {
+    margin-top: 5px !important;
+  }
+
+  ul.list-formatted-output > li {
+    padding-left: 10px;
+    margin-bottom: 7px;
+    border-left: 2px solid transparent;
+  }
+
+  // ul.list-formatted-output > li.active {
+  //   border-left: 2px solid orange;
+  //   background: darken(@background-color-selected, 9%);
+  // }
+
+  ul.list-formatted-output > li > span:first-child {
+    margin-right: 5px;
+    float: left;
+    width: 10px;
+  }
+
+  ul.list-formatted-output > li > span:nth-child(2) {
+    display: block;
+  }
+
+  ul.list-formatted-output > li > ul {
+    display: none;
+    padding: 0px 0px;
+    font-size: @font-size - 1;
+    margin-top: 7px;
+  }
+
+  ul.list-formatted-output > li > ul > li {
+    padding: 2px 5px !important;
+    border-radius: 4px;
+    color: @text-color-info;
+    margin-bottom: 0px;
+  }
+
+  ul.list-formatted-output > li > ul > li > span {
+    padding-bottom: 0px !important;
+  }
+
+  ul.list-formatted-output > li > ul > li > span:first-child {
+    display: block;
+    width: 75px;
+    color: @text-color-subtle;
+    margin-right: 5px;
+    float: left;
+  }
+
+  ul.list-formatted-output > li > ul > li:hover > span:first-child {
+    color: @text-color;
+  }
+
+  ul.list-formatted-output > li:hover > span {
+    color: @text-color-highlight;
+  }
+}
+
+#tessla-functions-sidebar {
+  display: block;
+  padding: 5px 0px 10px 10px;
+  margin: 0px;
+  overflow-y: auto;
+  border: 0px;
+  min-height: 150px;
+
+  ul {
+    li {
+      div.placeholder {
+        margin: 0px;
+        padding: 0px;
+        display: block;
+        float: left;
+        height: 1px;
+        margin-right: 10px;
+      }
+
+      button {
+        display: block;
+        float: left;
+        margin: 0px;
+        padding: 0px;
+        /*padding-top: 3px;*/
+        width: 24px;
+        background: transparent;
+        border-radius: 7px;
+        /*color: #454B5A;*/
+        border: none;
+        color: @text-color-subtle;
+        margin-right: 6px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      button:hover {
+        color: @text-color-highlight;
+      }
+
+      span:first-of-type {
+        display: block;
+        float: left;
+        padding: 4px 0px;
+        font-style: italic;
+        margin-right: 5px;
+        color: #0078A6;
+        color: @text-color-info;
+      }
+
+      span:first-of-type.tssl {
+        color: #E24968;
+        color: @text-color-error;
+      }
+
+      span:first-of-type.tssl-logged {
+        color: #61992D;
+        color: @text-color-success;
+      }
+
+      span:nth-of-type(2) {
+        display: block;
+        float: left;
+        padding: 4px 2px;
+        margin-right: 5px;
+        max-width: 70px;
+      }
+
+      span:nth-of-type(3),
+      span:nth-of-type(4) {
+        display: block;
+        float: right;
+        font-style: italic;
+        /*color: #454B5A;*/
+        color: @text-color-subtle;
+        padding: 4px 0px;
+        margin-left: 5px;
+      }
+    }
+
+    li.hint {
+      /*color: #454B5A;*/
+      color: @text-color-subtle;
+      font-style: italic;
+      text-align: center;
+      cursor: default;
+    }
+
+    li:hover > span:nth-of-type(2) {
+      color: @text-color-highlight;
+    }
+  }
+
+  ul.list-tssl-functions > li {
+    padding-left: 10px;
+    cursor: default;
+  }
+}
+
+#tessla-table-view,
+#tessla-functions-sidebar {
+  h2 {
+    font-size: @font-size;
+    color: @text-color;
+    background: @base-background-color;
+    text-align: left;
+    padding: 10px;
+    margin: 10px 0px;
+    text-overflow: ellipsis;
+  	white-space: nowrap;
+  	overflow: hidden;
+    border-radius: 5px 0px 0px 5px;
+  }
+
+  ul {
+    margin: 0px 0px 0px 5px;
+    padding: 0px;
+
+    li {
+      position: relative;
+      list-style-type: none;
+      padding: 0px 5px 0px 0px;
+      text-overflow: ellipsis;
+    	white-space: nowrap;
+    	overflow: hidden;
+      cursor: pointer;
+    }
+  }
+}
+
+#tessla-table-view > div.resizer {
   position: absolute;
   background: transparent;
   width: 15px;
@@ -156,127 +380,15 @@
   cursor: col-resize;
 }
 
-#tessla-functions-sidebar > h2 {
-  font-size: @font-size;
-  color: @text-color - 1;
-  background: @base-background-color;
-  text-align: left;
-  padding: 10px;
-  margin: 10px 0px;
-  text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-  border-radius: 5px 0px 0px 5px;
-}
-
-#tessla-functions-sidebar > ul {
-  margin: 0px 0px 0px 5px;
-  padding: 0px;
-}
-
-#tessla-functions-sidebar > ul > li {
-  /*vertical-align: text-bottom;*/
-  position: relative;
-  list-style-type: none;
-  padding: 0px 5px 0px 0px;
-  text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-#tessla-functions-sidebar > ul.list-tssl-functions > li {
-  padding-left: 10px;
-  cursor: default;
-}
-
-#tessla-functions-sidebar > ul > li.hint {
-  /*color: #454B5A;*/
-  color: @text-color-subtle;
-  font-style: italic;
-  text-align: center;
-  cursor: default;
-}
-
-#tessla-functions-sidebar > ul > li > div.placeholder {
-  margin: 0px;
-  padding: 0px;
-  display: block;
-  float: left;
-  height: 1px;
-  margin-right: 10px;
-}
-
-#tessla-functions-sidebar > ul > li > button {
-  display: block;
-  float: left;
-  margin: 0px;
-  padding: 0px;
-  /*padding-top: 3px;*/
-  width: 24px;
-  background: transparent;
-  border-radius: 7px;
-  /*color: #454B5A;*/
-  border: none;
-  color: @text-color-subtle;
-  margin-right: 6px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-#tessla-functions-sidebar > ul > li > button:hover {
-  color: @text-color-highlight;
-}
-
-/* fn-tag */
-#tessla-functions-sidebar > ul > li > span:first-of-type {
-  display: block;
-  float: left;
-  padding: 4px 0px;
-  font-style: italic;
-  margin-right: 5px;
-  color: #0078A6;
-  color: @text-color-info;
-}
-
-#tessla-functions-sidebar > ul > li > span:first-of-type.tssl {
-  color: #E24968;
-  color: @text-color-error;
-}
-
-#tessla-functions-sidebar > ul > li > span:first-of-type.tssl-logged {
-  color: #61992D;
-  color: @text-color-success;
-}
-
-/* function name tag */
-#tessla-functions-sidebar > ul > li > span:nth-of-type(2) {
-  display: block;
-  float: left;
-  padding: 4px 2px;
-  margin-right: 5px;
-  max-width: 70px;
-}
-
-#tessla-functions-sidebar > ul > li:hover > span:nth-of-type(2) {
-  color: @text-color-highlight;
-}
-
-/* occurence tag */
-#tessla-functions-sidebar > ul > li > span:nth-of-type(3),
-#tessla-functions-sidebar > ul > li > span:nth-of-type(4) {
-  display: block;
-  float: right;
-  font-style: italic;
-  /*color: #454B5A;*/
-  color: @text-color-subtle;
-  padding: 4px 0px;
-  margin-left: 5px;
-}
-
+/** TeSSLa error tooltips and gutter formats **/
 .tessla-syntax-error > .region {
   border-bottom: 1px dashed @background-color-error;
+}
+
+.tessla-unused-function > .region {
+  border: 1px dashed fadeout(#FF3F1D, 50%);
+  background: fadeout(#FF3F1D, 70%);
+  border-radius: 3px;
 }
 
 .tessla-syntax-dot {
@@ -296,47 +408,41 @@
 
 .tessla-syntax-tooltip {
   padding-top: 6px;
-}
 
-.tessla-syntax-tooltip > div {
-  padding: 5px;
-  border-radius: 0px 5px 5px 5px;
-  background: #9DA5B3;
-  color: #222;
-  position: relative;
-}
+  div {
+    padding: 5px;
+    border-radius: 0px 5px 5px 5px;
+    background: #9DA5B3;
+    color: #222;
+    position: relative;
 
-.tessla-syntax-tooltip > div:before {
-  position: absolute;
-  content: '';
-  top: -8px;
-  left: 0px;
-  width: 0px;
-  height: 0px;
-  border-bottom: 8px solid #9DA5B3;
-  border-right: 8px solid transparent;
-}
+    span:not(.error-label) {
+      padding: 4px 3px;
+      margin-left: 42px;
+      font-size: @font-size !important;
+    }
 
-.tessla-syntax-tooltip > div > span:not(.error-label) {
-  padding: 4px 3px;
-  margin-left: 42px;
-  font-size: @font-size !important;
-}
+    span.error-label {
+      background: @background-color-error;
+      border-radius: 4px;
+      color: #FFF;
+      margin-right: 3px;
+      font-size: @font-size - 2.5;
+      position: absolute;
+      top: 6px;
+      left: 5px;
+      padding: 1px 5px;
+    }
+  }
 
-.tessla-syntax-tooltip > div > span.error-label {
-  background: @background-color-error;
-  border-radius: 4px;
-  color: #FFF;
-  margin-right: 3px;
-  font-size: @font-size - 2.5;
-  position: absolute;
-  top: 6px;
-  left: 5px;
-  padding: 1px 5px;
-}
-
-.tessla-unused-function > .region {
-  border: 1px dashed fadeout(#FF3F1D, 50%);
-  background: fadeout(#FF3F1D, 70%);
-  border-radius: 3px;
+  div:before {
+    position: absolute;
+    content: '';
+    top: -8px;
+    left: 0px;
+    width: 0px;
+    height: 0px;
+    border-bottom: 8px solid #9DA5B3;
+    border-right: 8px solid transparent;
+  }
 }
