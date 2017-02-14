@@ -2,6 +2,8 @@
 
 ![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)
 
+<img src="https://github.com/dmlux/files/blob/master/images/TeSSLa/screenshot.png">
+
 ## Introduction
 
 This packages provides some IDE-like functions for C-Code and the TeSSLa LTL. There are two great GUI extensions that the package provides. In Addition to the GUI components there is also a grammar file for the TeSSLa LTL provided to enable syntax highlighting for files having the `.tessla` extension. Make sure to disable other packages providing syntax highlighting for `.tessla` files to get the correct source code visualization.
@@ -15,7 +17,7 @@ To use the full range of functions that are provided by this package some depend
 
 **Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
 
-## functions-sidebar
+## Functions Sidebar
 
 <img align="left" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/sidebar.png">
 
@@ -33,7 +35,7 @@ The lower area of the functions sidebar contains the formatted output from the T
 
 The border above the lower area contains a resize handle which can be used to change the space each area takes up. The whole sidebar can be resized as well as both areas inside of it. On the left edge there is a resize handle to adjust the width. The sidebar has a minimum width and a maximum width that can not be exceeded. 
 
-## message-panel 
+## Message Panel 
 
 The message panel is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up to several streams each with its own reiter. The user can select which reiter should be active. Only the contents of the active reiter are displayed in the the panel body. If there were any messages that belong to an other stream the little notification badge in front of the reiter name will be incremented and colored depending on which reiter was updated. Switching the active reiter will clear the notification. The counter will be reset and the color will be set back to the original color.
 
@@ -52,3 +54,7 @@ Each message belongs to at least one stream:
   - The `Log` stream contains all comands that were used by the package and the responses to these comands.
   
 <img align="center" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/message-panel.png">
+
+## Tool Bar
+
+To compile and run binaries compiled from source code the tool bar provides some buttons: 
