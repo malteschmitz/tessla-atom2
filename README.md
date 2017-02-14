@@ -17,7 +17,7 @@ Dependencies that are needed to fully use this packages can be found here:
 
 ## functions-sidebar
 
-<img align="left" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/sidebar.png" width="175">
+<img align="left" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/sidebar.png">
 
 The functions sidebar is divided into two seperate areas. 
 
@@ -25,11 +25,13 @@ The upper area shows C functions that appear in the C files and C functions that
 
 Both lists providing some special functions to the user. The circled plus buttons inserting one line of TeSSLa code in the TeSSLa source file to observe the function calls in the compiled C binary. Next to the plus buttons there are _f(x)_ tags that can be colored in three different colors
 
-When the the function tag is colored blue the function is not observed by the TeSSLa source code. When the function tag is colored green the function is observed by the TeSSLa source code. When the function tag is colored red the function is observed by the TeSSLa source code but not seem to exist in the considered C sources.
+When the the function tag is colored blue the function is not observed by the TeSSLa source code. When the function tag is colored green the function is observed by the TeSSLa source code and when the function tag is colored red the function is observed by the TeSSLa source code but does not seem to exist in the considered C sources.
 
 The rightmost text in each row indicates the position where the function was found in the C sources. The format is `filename(line:row)`, where the filename is the path to the file relative to the project root.
 
-The lower area of the functions sidebar contains the formatted output from the TeSSLaServer. The output is a list that contains each output identifier and the value that the identifier evaluates to at a certain time. Each output list is initially hidden and can be displayed by clicking the identifier. The border above the lower area contains a resize handle which can be used to change the space each area takes up.
+The lower area of the functions sidebar contains the formatted output from the TeSSLaServer. The output is a list that contains each output identifier and the value that the identifier evaluates to at a certain time. Each output list is initially hidden and can be displayed by clicking the identifier. The entries within the list are displayed in two columns. The left column shows the time when the identifier evaluates to the value in the right column. The time format is `HH:MM:SS.mmm`. 
+
+The border above the lower area contains a resize handle which can be used to change the space each area takes up. The whole sidebar can be resized as well as both areas inside of it. On the left edge there is a resize handle to adjust the width. The sidebar has a minimum width and a maximum width that can not be exceeded. 
 
 ## message-panel 
 
