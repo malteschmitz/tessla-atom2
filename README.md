@@ -4,16 +4,16 @@
 
 ## Introduction
 
-This packages provides some IDE-like functions for C-Code and the temporal logic TeSSLa. There are two great GUI extensions the package provides. In Addition to the GUI components this package provides a grammar file for TeSSLa to enable syntax highlighting for files having the `.tessla` extension. Make sure to disable other packages providing syntax highlighting for `.tessla` files to get the correct source code visualization.
+This packages provides some IDE-like functions for C-Code and the TeSSLa LTL. There are two great GUI extensions that the package provides. In Addition to the GUI components this package provides a grammar file for the TeSSLa LTL to enable syntax highlighting for files having the `.tessla` extension. Make sure to disable other packages providing syntax highlighting for `.tessla` files to get the correct source code visualization.
 
 ## Dependencies
 
-Dependencies that are needed to fully use this packages can be found here:
+To use the full range of functions that are provided by this package some dependencies are needed:
   - [InstrumentFunctions library](https://github.com/imdea-software/LLVM_Instrumentation_Pass)
   - [TeSSLaServer](https://github.com/imdea-software/TesslaServer)
   
 
-**Note:** To use the full range of functions this package provides the correct paths to the compilers and the TeSSLaServer as well the  external libraries that are listed above should be set first. The correct paths are set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`.
+**Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
 
 ## functions-sidebar
 
