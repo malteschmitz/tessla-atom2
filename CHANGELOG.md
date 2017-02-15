@@ -1,3 +1,10 @@
+## 1.1.2 (February 15, 2017)
+Features:
+  - Updated the description string in the packages.json
+  
+Bugfixes:
+  - Changed the images in the README.md to point to the raw images
+
 ## 1.1.1 (February 15, 2017)
 Features:
   - Added README.md to package
