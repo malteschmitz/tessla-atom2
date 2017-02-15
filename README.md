@@ -1,6 +1,6 @@
 # TeSSLa-IDE package
 
-![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)
+[![DUB](https://img.shields.io/dub/l/vibe-d.svg)]()[![VERSION](https://img.shields.io/badge/version-1.1.0-orange.svg)]()
 
 <img src="https://github.com/dmlux/files/blob/master/images/TeSSLa/screenshot.png">
 
@@ -13,6 +13,9 @@ This packages provides some IDE-like functions for C-Code and the TeSSLa LTL. Th
 To use the full range of functions that are provided by this package some dependencies are needed:
   - [InstrumentFunctions library](https://github.com/imdea-software/LLVM_Instrumentation_Pass)
   - [TeSSLaServer](https://github.com/imdea-software/TesslaServer)
+  
+The following dependencies are installed automatically by this package:
+  - [Atom tool-bar package](https://atom.io/packages/tool-bar)
   
 
 **Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
