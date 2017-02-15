@@ -37,7 +37,7 @@ The border above the lower area contains a resize handle which can be used to ch
 
 ## Message Panel 
 
-The message panel is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up to several streams each with its own reiter. The user can select which reiter should be active. Only the contents of the active reiter are displayed in the the panel body. If there were any messages that belong to an other stream the little notification badge in front of the reiter name will be incremented and colored depending on which reiter was updated. Switching the active reiter will clear the notification. The counter will be reset and the color will be set back to the original color.
+The message panel is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up into several streams each with its own reiter. The user can select which reiter should be active. Only the contents of the active reiter are displayed in the the panel body. If there were any messages that belong to an other stream the little notification badge in front of the reiter name will be incremented and colored depending on which reiter was updated. Switching the active reiter will clear the notification. The counter will be reset and the color will be set back to the original color.
 
 At the top of the message panel there is a resize handle which can be used to adjust the height of the panel and hence the amount of visible content in the active stream. On the top right there are three buttons. The buttons can be used to interact with the message panel. 
 
@@ -57,4 +57,31 @@ Each message belongs to at least one stream:
 
 ## Tool Bar
 
-To compile and run binaries compiled from source code the tool bar provides some buttons: 
+<img align="right" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/tool-bar.png">
+
+To compile and run binaries compiled from source code the tool bar provides some buttons:
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/build-and-run-c.png"> This button compiles all C files that can be found recursively in the current project directory and runs the resulting binary. Before the binary will be created it will create a build directory within the project directory. The binary will get the same name as the project but contains `_` instead of white spaces.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/build-c.png"> This button will do nearly the same job but without executing the resulting binary.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/run-c.png"> Whereas this button will only runs a binary which is located in the build directory and follows the naming conventions explained above.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/build-and-run-project.png"> This button will trigger a few more steps than just compiling and running a binary file:
+  
+  1. If the build directory in the project directory is not already created it will be created.
+  2. All C files in the current project directory are collected recursively and an Assembly file is compiled from them. The name format of the Assembly file is `<project-name>.bc`.
+  3. The Assembly code is patched by appending external symbols from the instrument functions library to each observed function. The file name format is `instrumented_<project-name>.bc`.
+  4. The patched Assembly file is compiled into an executable binary. The binary name format is `instrumented_<project-name>`
+  5. A `zlog.conf` file which is needed to format the output of the instrumented binary is created in the build directory.
+  6. The instrumented binary is executed which generates a trace file containing information about the function calls of the observed functions. Each line in this trace file is formatted by given rules in the `zlog.conf`. The name format of the trace file is `instrumented_<project-name>.trace`.  
+  7. The projected directory is scanned recursively to find a TeSSLa file. The first found TeSSLa file will be taken to compile it into a JSON file containing an AST (Abstract Syntax Tree).
+  8. At last the AST in the JSON file and trace file are given to the TeSSLaServer which will generate the output specified in the TeSSLa file.
+  
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/stop-process.png"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/toggle-message-panel.png"> This button will toggle the message panel.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/toggle-functions-sidebar.png"> This button will toggle the functions sidebar.
+
+<img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
