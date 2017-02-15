@@ -1,3 +1,7 @@
+## 1.1.1 (February 15, 2017)
+Features:
+  - Added README.md to package
+
 ## 1.1.0 (February 14, 2017)
 
 Features:
