@@ -113,7 +113,7 @@ To compile and run binaries compiled from source code the tool bar provides some
 There are some settings that are important to set before you can use all features this packages provides:
 - _Path to clang compiler_: This should be the path were the clang compiler is located on your system. 
 
-  **Note:** on MacOS/OS X the clang compiler installed by Xcode/Xcode command line tools does not have the LLVM extensions. To be able to use all features provided by this package you have to build clang by your self. 
+ **Note:** on MacOS/OS X the clang compiler installed by Xcode/Xcode command line tools does not have the LLVM extensions. To be able to use all features provided by this package you have to build clang by your self. 
 
 - _Path to instrument functions library_: This should be the path to the `libInstrumentFunctions.so`. Further information can be found [here](https://github.com/imdea-software/LLVM_Instrumentation_Pass).
 
@@ -123,11 +123,11 @@ There are some settings that are important to set before you can use all feature
 
 - _Zlog string formatting for variables_: This represents the format of how variables are formatted in the `.trace`-files. 
 
-  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
+ **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
   
 - _Zlog string formatting for function calls_: This represents the format of how function calls are formatted in the `.trace`-files.
 
-  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
+ **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
   
 - _Animation speed for toggling menus and panels in milliseconds_: This value will adjust the speed of animations triggered in this package. The value represents milliseconds
   
