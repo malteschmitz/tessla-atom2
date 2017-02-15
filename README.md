@@ -1,8 +1,21 @@
 # TeSSLa-IDE package
 
-[![DUB](https://img.shields.io/dub/l/vibe-d.svg)]()[![VERSION](https://img.shields.io/badge/version-1.1.0-orange.svg)]()
+<p align="left">
+  <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
+  <img src="https://img.shields.io/badge/version-1.1.0-orange.svg" alt="Package version">
+</p>
 
-<img src="https://github.com/dmlux/files/blob/master/images/TeSSLa/screenshot.png">
+<p align="center">
+  <img src="https://github.com/dmlux/files/blob/master/images/TeSSLa/screenshot.png">
+</p>
+
+## Overview
+- [Introduction](#introduction)
+- [Dependencies](#dependencies)
+- [Functions Sidebar](#functions-sidebar)
+- [Message Panel](#message-panel)
+- [Tool Bar](#tool-bar)
+- [Configuration](#configuration)
 
 ## Introduction
 
@@ -15,7 +28,13 @@ To use the full range of functions that are provided by this package some depend
   - [TeSSLaServer](https://github.com/imdea-software/TesslaServer)
   
 The following dependencies are installed automatically by this package:
-  - [Atom tool-bar package](https://atom.io/packages/tool-bar)
+  - [[Atom] tool-bar](https://atom.io/packages/tool-bar)
+  - [[Atom] Linter](https://atom.io/packages/linter)
+  - [[Atom] linter-gcc](https://atom.io/packages/linter-gcc)
+  
+The icons that are used in this package are provided by:
+  - [ionicons](http://ionicons.com)
+  - [Font Awesome](http://fontawesome.io)
   
 
 **Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
@@ -88,3 +107,9 @@ To compile and run binaries compiled from source code the tool bar provides some
 <img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/toggle-functions-sidebar.png"> This button will toggle the functions sidebar.
 
 <img align="left" width="25" src="https://github.com/dmlux/files/blob/master/images/TeSSLa/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
+
+## Configuration
+
+<p align="center">
+  <img src="https://github.com/dmlux/files/blob/master/images/TeSSLa/settings.png">
+</p>
