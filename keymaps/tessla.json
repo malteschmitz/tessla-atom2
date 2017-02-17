@@ -1,5 +1,11 @@
 {
-  "atom-workspace": {
-    "ctrl-alt-o": "tessla:toggle"
+  ".workspace .editor:not(.mini)": {
+    "cmd-shift-t": "tessla:toggle",
+    "cmd-b":       "tessla:build-c-code",
+    "cmd-e":       "tessla:run-c-code",
+    "cmd-r":       "tessla:build-and-run-c-code",
+    "cmd-t":       "tessla:build-and-run-project",
+    "ctrl-c":      "tessla:stop-current-process",
+    "cmd-enter":   "tessla:set-up-split-view"
   }
 }

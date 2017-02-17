@@ -110,6 +110,12 @@ To compile and run binaries compiled from source code the tool bar provides some
 
 <img align="left" width="25" src="./images/Screenshots/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
 
+## Menu
+
+<img align="left" src="./images/Screenshots/menu.png">
+
+In the menu of packages there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the [keymap bindings](#keymap-bindings) section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace. 
+
 ## Configuration
 
 There are some settings that are important to set before you can use all features this packages provides:
@@ -136,6 +142,19 @@ There are some settings that are important to set before you can use all feature
 <p align="center">
   <img src="./images/Screenshots/settings.png">
 </p>
+
+## Keymap bindings
+
+The TeSSLa package provides some keymap bindings to increase the work-flow. The following list contains all provided keymap bindings and their resulting effects.
+
+| Keymap                            | Effect                            |
+|:----------------------------------|:----------------------------------|
+| `cmd-shift-t`                     | Toggles the package               |
+| `cmd-b`                           | This keymap causes the package to build a binary compiled from C code that was found in the active project |
+| `cmd-r`                           | This keymap causes the package to build and run a binary compiled from C code that was found in the active project |
+| `cmd-t`                           | This keymap causes the package to pass step 1 to 8 from the [Tool Bar section](#tool-bar) |
+| `ctrl-c`                          | This keymap causes the package to stop the process currently spawned and monitored by this package |
+| `cmd-enter`                       | This keymap causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed |
 
 ## Supported Commands
 

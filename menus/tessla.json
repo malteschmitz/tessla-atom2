@@ -11,6 +11,12 @@
       {
         "type": "separator"
       }
+    ],
+    "#tessla-message-panel-wrapper": [
+      {
+        "label": "Copy", 
+        "command": "core:copy"
+      }
     ]
   },
   "menu": [
@@ -23,6 +29,36 @@
             {
               "label": "Toggle",
               "command": "tessla:toggle"
+            },
+            {
+              "type": "separator"
+            },
+            {
+              "label": "Build C code",
+              "command": "tessla:build-c-code"
+            },
+            {
+              "label": "Run C code",
+              "command": "tessla:run-c-code"
+            },
+            {
+              "label": "Build & Run C code",
+              "command": "tessla:build-and-run-c-code"
+            },
+            {
+              "label": "Build & Run Project",
+              "command": "tessla:build-and-run-project"
+            },
+            {
+              "label": "Stop current process",
+              "command": "tessla:stop-current-process"
+            },
+            {
+              "type": "separator"
+            },
+            {
+              "label": "Set up split view",
+              "command": "tessla:set-up-split-view"    
             }
           ]
         }
