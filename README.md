@@ -69,7 +69,7 @@ At the top of the message panel there is a resize handle which can be used to ad
 - the write button opens a save dialog to save the content of the active stream. 
 
 Each message belongs to at least one stream:
-- The `Console` stream contains all messages that were returned by compiled C sources and the messages returned by TeSSLaServer.
+- The `Console` stream contains all messages that were returned by the compiled C sources and the messages returned by TeSSLaServer.
 - The `Errors(C)` stream contains all messages returned by the clang compiler.
 - The `Errors(TeSSLa)` stream contains all messages returned by the TeSSLa compiler.
 - The `warnings` stream contains all messages that were displayed as notifications. The messages refer generally to wrong user input.
