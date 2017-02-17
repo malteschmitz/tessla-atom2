@@ -74,8 +74,10 @@ Each message belongs to at least one stream:
 - The `Errors(TeSSLa)` stream contains all messages returned by the TeSSLa compiler.
 - The `warnings` stream contains all messages that were displayed as notifications. The messages refer generally to wrong user input.
 - The `Log` stream contains all comands that were used by the package and the responses to these comands.
-  
-<img align="center" src="./images/Screenshots/message-panel.png">
+
+<p align="center">
+  <img src="./images/Screenshots/message-panel.png">
+</p>
 
 ## Tool Bar
 
