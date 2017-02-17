@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="./images/screenshots/screenshot.png">
+  <img src="./images/Screenshots/screenshot.png">
 </p>
 
 ## Overview
@@ -43,7 +43,7 @@ The icons that are used in this package are provided by:
 
 ## Sidebar
 
-<img align="left" src="./images/screenshots/sidebar.png?raw=true">
+<img align="left" src="./images/Screenshots/sidebar.png">
 
 The sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance. 
 
@@ -75,21 +75,21 @@ Each message belongs to at least one stream:
 - The `warnings` stream contains all messages that were displayed as notifications. The messages refer generally to wrong user input.
 - The `Log` stream contains all comands that were used by the package and the responses to these comands.
   
-<img align="center" src="./images/screenshots/message-panel.png">
+<img align="center" src="./images/Screenshots/message-panel.png">
 
 ## Tool Bar
 
-<img align="right" src="./images/screenshots/tool-bar.png">
+<img align="right" src="./images/Screenshots/tool-bar.png">
 
 To compile and run binaries compiled from source code the tool bar provides some buttons:
 
-<img align="left" width="25" src="./images/screenshots/build-and-run-c.png"> This button compiles all C files that can be found recursively in the current project directory and runs the resulting binary. Before the binary will be created it will create a build directory within the project directory. The binary will get the same name as the project but contains `_` instead of white spaces.
+<img align="left" width="25" src="./images/Screenshots/build-and-run-c.png"> This button compiles all C files that can be found recursively in the current project directory and runs the resulting binary. Before the binary will be created it will create a build directory within the project directory. The binary will get the same name as the project but contains `_` instead of white spaces.
 
-<img align="left" width="25" src="./images/screenshots/build-c.png"> This button will do nearly the same job but without executing the resulting binary.
+<img align="left" width="25" src="./images/Screenshots/build-c.png"> This button will do nearly the same job but without executing the resulting binary.
 
-<img align="left" width="25" src="./images/screenshots/run-c.png"> Whereas this button will only runs a binary which is located in the build directory and follows the naming conventions explained above.
+<img align="left" width="25" src="./images/Screenshots/run-c.png"> Whereas this button will only runs a binary which is located in the build directory and follows the naming conventions explained above.
 
-<img align="left" width="25" src="./images/screenshots/build-and-run-project.png"> This button will trigger a few more steps than just compiling and running a binary file:
+<img align="left" width="25" src="./images/Screenshots/build-and-run-project.png"> This button will trigger a few more steps than just compiling and running a binary file:
 
 1. If the build directory in the project directory is not already created it will be created.
 2. All C files in the current project directory are collected recursively and an Assembly file is compiled from them. The name format of the Assembly file is `<project-name>.bc`.
@@ -100,13 +100,13 @@ To compile and run binaries compiled from source code the tool bar provides some
 7. The projected directory is scanned recursively to find a TeSSLa file. The first found TeSSLa file will be taken to compile it into a JSON file containing an AST (Abstract Syntax Tree).
 8. At last the AST in the JSON file and trace file are given to the TeSSLaServer which will generate the output specified in the TeSSLa file.
   
-<img align="left" width="25" src="./images/screenshots/stop-process.png"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
+<img align="left" width="25" src="./images/Screenshots/stop-process.png"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
 
-<img align="left" width="25" src="./images/screenshots/toggle-message-panel.png"> This button will toggle the message panel.
+<img align="left" width="25" src="./images/Screenshots/toggle-message-panel.png"> This button will toggle the message panel.
 
-<img align="left" width="25" src="./images/screenshots/toggle-functions-sidebar.png"> This button will toggle the sidebar.
+<img align="left" width="25" src="./images/Screenshots/toggle-functions-sidebar.png"> This button will toggle the sidebar.
 
-<img align="left" width="25" src="./images/screenshots/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
+<img align="left" width="25" src="./images/Screenshots/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
 
 ## Configuration
 
@@ -132,7 +132,7 @@ There are some settings that are important to set before you can use all feature
 - _Animation speed for toggling menus and panels in milliseconds_: This value will adjust the speed of animations triggered in this package. The value represents milliseconds
   
 <p align="center">
-  <img src="./images/screenshots/settings.png">
+  <img src="./images/Screenshots/settings.png">
 </p>
 
 ## Supported Commands
