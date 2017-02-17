@@ -149,7 +149,7 @@ There are some global commands other packages can trigger or subscribe to. A lis
 | `tessla:build-c-code`             | This command causes the package to build a binary compiled from C code that was found in the active project |
 | `tessla:run-c-code`               | This command causes the package to run the binary `<project-name>` in `<project-directory>/build/` |
 | `tessla:stop-current-process`     | This command causes the package to stop the process currently spawned and monitored by this package |
-| `tessla:build-and-run-project`    | This command causes the package to run step 1 to 8 from the [Tool Bar section](#tool-bar) |
+| `tessla:build-and-run-project`    | This command causes the package to pass step 1 to 8 from the [Tool Bar section](#tool-bar) |
 
 ## Authors
 
