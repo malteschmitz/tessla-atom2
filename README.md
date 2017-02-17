@@ -143,14 +143,13 @@ There are some global commands other packages can subscribe to:
 |:----------------------------------|:----------------------------------|
 | `tessla:toggle`                   | This command causes the package to toggle all components of the package including sidebar and message panel | 
 | `tessla:set-up-split-view`        | This command causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed | 
-| `tessla:toggle-functions-sidebar` | This command causes the package to toggle the sidebar |
+| `tessla:toggle-sidebar`           | This command causes the package to toggle the sidebar |
 | `tessla:toggle-message-panel`     | This command causes the package to toggle the message panel |
 | `tessla:build-and-run-c-code`     | This command causes the package to build and run a binary compiled from C code that was found in the active project |
 | `tessla:build-c-code`             | This command causes the package to build a binary compiled from C code that was found in the active project |
 | `tessla:run-c-code`               | This command causes the package to run the binary `<project-name>` in `<project-directory>/build/` |
 | `tessla:stop-current-process`     | This command causes the package to stop the process currently spawned and monitored by this package |
 | `tessla:build-and-run-project`    | This command causes the package to run step 1 to 8 from the [Tool Bar section](#tool-bar) |
-| `tessla:toggle-functions-sidebar` | This command causes the package to toggle the sidebar |
 
 ## Authors
 
