@@ -112,9 +112,11 @@ To compile and run binaries compiled from source code the tool bar provides some
 
 ## Menu
 
-<img align="left" src="./screenshots/menu.png">
+In the "packages" menu there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the [keymap bindings](#keymap-bindings) section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace. 
 
-In the menu of packages there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the [keymap bindings](#keymap-bindings) section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace. 
+<p align="center">
+  <img src="./screenshots/menu.png">
+</p>
 
 ## Configuration
 
