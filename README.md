@@ -137,7 +137,7 @@ There are some settings that are important to set before you can use all feature
 
 ## Supported Commands
 
-There are some global commands other packages can subscribe to:
+There are some global commands other packages can trigger or subscribe to. A list of all global commands and their effects are shown in the table below.
 
 | Command                           | Description                       |
 |:----------------------------------|:----------------------------------|
