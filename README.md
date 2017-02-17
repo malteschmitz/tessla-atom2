@@ -121,15 +121,15 @@ There are some settings that are important to set before you can use all feature
 
 - _Path to TeSSLa server_: This should be the path were the TeSSLaServer is located on your system. The TeSSLaServer and further information about it can be found [here](https://github.com/imdea-software/TesslaServer)
 
-- _Zlog string formatting for variables_: This represents the format of how variables are formatted in the `.trace`-files. 
+- _zlog string format for variables_: This represents the format of how variables are formatted in the `.trace`-files. 
 
  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
   
-- _Zlog string formatting for function calls_: This represents the format of how function calls are formatted in the `.trace`-files.
+- _zlog string format for function calls_: This represents the format of how function calls are formatted in the `.trace`-files.
 
  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
   
-- _Animation speed for toggling menus and panels in milliseconds_: This value will adjust the speed of animations triggered in this package. The value represents milliseconds
+- _Animation speed_: This value will set the speed of animations triggered in this package. The value represents a duration milliseconds
   
 <p align="center">
   <img src="./images/Screenshots/settings.png">
