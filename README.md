@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="./screenshots/screenshot.png">
+  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/screenshot.png?raw=true">
 </p>
 
 ## Overview
@@ -43,7 +43,7 @@ The icons that are used in this package are provided by:
 
 ## Sidebar
 
-<img align="left" src="./screenshots/sidebar.png">
+<img align="left" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/sidebar.png?raw=true">
 
 The sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance. 
 
@@ -76,22 +76,22 @@ Each message belongs to at least one stream:
 - The `Log` stream contains all comands that were used by the package and the responses to these comands.
 
 <p align="center">
-  <img src="./screenshots/message-panel.png">
+  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/message-panel.png?raw=true">
 </p>
 
 ## Tool Bar
 
-<img align="right" src="./screenshots/tool-bar.png">
+<img align="right" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/tool-bar.png?raw=true">
 
 To compile and run binaries compiled from source code the tool bar provides some buttons:
 
-<img align="left" width="25" src="./screenshots/build-and-run-c.png"> This button compiles all C files that can be found recursively in the current project directory and runs the resulting binary. Before the binary will be created it will create a build directory within the project directory. The binary will get the same name as the project but contains `_` instead of white spaces.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/build-and-run-c.png?raw=true"> This button compiles all C files that can be found recursively in the current project directory and runs the resulting binary. Before the binary will be created it will create a build directory within the project directory. The binary will get the same name as the project but contains `_` instead of white spaces.
 
-<img align="left" width="25" src="./screenshots/build-c.png"> This button will do nearly the same job but without executing the resulting binary.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/build-c.png?raw=true"> This button will do nearly the same job but without executing the resulting binary.
 
-<img align="left" width="25" src="./screenshots/run-c.png"> Whereas this button will only runs a binary which is located in the build directory and follows the naming conventions explained above.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/run-c.png?raw=true"> Whereas this button will only runs a binary which is located in the build directory and follows the naming conventions explained above.
 
-<img align="left" width="25" src="./screenshots/build-and-run-project.png"> This button will trigger a few more steps than just compiling and running a binary file:
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/build-and-run-project.png?raw=true"> This button will trigger a few more steps than just compiling and running a binary file:
 
 1. If the build directory in the project directory is not already created it will be created.
 2. All C files in the current project directory are collected recursively and an Assembly file is compiled from them. The name format of the Assembly file is `<project-name>.bc`.
@@ -102,18 +102,18 @@ To compile and run binaries compiled from source code the tool bar provides some
 7. The projected directory is scanned recursively to find a TeSSLa file. The first found TeSSLa file will be taken to compile it into a JSON file containing an AST (Abstract Syntax Tree).
 8. At last the AST in the JSON file and trace file are given to the TeSSLaServer which will generate the output specified in the TeSSLa file.
   
-<img align="left" width="25" src="./screenshots/stop-process.png"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/stop-process.png?raw=true"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
 
-<img align="left" width="25" src="./screenshots/toggle-message-panel.png"> This button will toggle the message panel.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/toggle-message-panel.png?raw=true"> This button will toggle the message panel.
 
-<img align="left" width="25" src="./screenshots/toggle-functions-sidebar.png"> This button will toggle the sidebar.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/toggle-functions-sidebar.png?raw=true"> This button will toggle the sidebar.
 
-<img align="left" width="25" src="./screenshots/set-up-split-view.png"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
+<img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/set-up-split-view.png?raw=true"> This button will set up the split view. To set up the split view the active file should be within a project containing TeSSLa and C files. If there is no such file the split view can not be set up.
 
 ## Menu
 
 <p align="center">
-  <img src="./screenshots/menu.png">
+  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/menu.png?raw=true">
 </p>
 In the "packages" menu there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the [keymap bindings](#keymap-bindings) section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace. 
 
@@ -142,7 +142,7 @@ There are some settings that are important to set before you can use all feature
 - _Animation speed_: This value will set the speed of animations triggered in this package. The value represents a duration milliseconds
   
 <p align="center">
-  <img src="./screenshots/settings.png">
+  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/settings.png?raw=true">
 </p>
 
 ## Keymap bindings
