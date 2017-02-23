@@ -9,16 +9,6 @@
   <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/screenshot.png?raw=true">
 </p>
 
-[comment]## Overview
-[comment]- [Introduction](#introduction)
-[comment]- [Dependencies](#dependencies)
-[comment]- [Sidebar](#sidebar)
-[comment]- [Message Panel](#message-panel)
-[comment]- [Tool Bar](#tool-bar)
-[comment]- [Configuration](#configuration)
-[comment]- [Supported Commands](#supported-commands)
-[comment]- [Authors](#authors)
-
 ## Introduction
 
 This Atom-packages provides some IDE-like functions for C-Code and the TeSSLa LTL. There are two great GUI extensions that the package provides. In Addition to the GUI components there is also a grammar file for the TeSSLa LTL provided to enable syntax highlighting for files having the `.tessla` extension. Make sure to disable other packages providing syntax highlighting for `.tessla` files to get the correct source code visualization.
