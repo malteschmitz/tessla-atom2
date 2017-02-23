@@ -1,4 +1,4 @@
-## 1.1.3 ()
+## 1.1.3 (February 17, 2017)
 Features:
   - Changed internal class names
   - Updated README.md
