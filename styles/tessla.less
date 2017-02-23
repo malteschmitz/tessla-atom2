@@ -204,6 +204,12 @@
 
   ul.list-formatted-output > li > span:nth-child(2) {
     display: block;
+    float: left;
+  }
+  
+  ul.list-formatted-output > li > span:nth-child(3) {
+    float: right;
+    color: @text-color-subtle;
   }
 
   ul.list-formatted-output > li > ul {
@@ -218,6 +224,7 @@
     border-radius: 4px;
     color: @text-color-info;
     margin-bottom: 0px;
+    cursor: default;
   }
 
   ul.list-formatted-output > li > ul > li > span {
@@ -238,6 +245,10 @@
 
   ul.list-formatted-output > li:hover > span {
     color: @text-color-highlight;
+  }
+  
+  ul.list-formatted-output > li:hover > span:nth-child(3) {
+    color: @text-color-subtle;
   }
 }
 

@@ -1,3 +1,18 @@
+## 1.1.4 (February 23, 2017)
+Features:
+  - Added keymap-bindings support. A full list of keymap-bindings is available in the `Packages > TeSSLa` submenu
+  - Added a row counter to the formatted output list in the sidebar
+  
+Bug-fixes:
+  - Renamed the emitter event 'distribute-unsued-functions' to 'distribute-unused-functions'
+  - Fixed an error that occurred when deleting the content of the build directory and running the project after that. Then the `zlog.conf` file was not created again and the compilation process terminated with an error
+  - Fixed an error that occurred when patching the Assembly file. The `opt` command had no prefix containing the path to the `opt` binary. In some casees this caused an `could not find opt` error
+  - Fixed an error that occurred when deactivating the package. The sidebar and message-panel where not removed from workspace 
+  - Fixed an error that occurred when toggling the package. The tool-bar sometimes showed inverted toggle behavior compared to the other components
+  - Changed cusor in the formatted output list in the sidebar to default cursor when hovering over the rows of the sublists
+  - Changed the relative links in the `README.md` file to absolute links so the images are displayed on the `atom.io` package-site
+  - Removed the `overview`-section from the `README.md` since the anchor-links are getting broken in the `atom.io` package-site
+
 ## 1.1.3 (February 17, 2017)
 Features:
   - Changed internal class names
@@ -19,7 +34,6 @@ Features:
   - Added README.md to package
 
 ## 1.1.0 (February 14, 2017)
-
 Features:
   - Added a table like view to offer a formatted TeSSLa server output
 
@@ -27,7 +41,6 @@ Bug-fixes:
   - Fixed some smaller problems
 
 ## 1.0.0 (February 09, 2017)
-
 Features:
   - Added functions sidebar to workspace
   - Added message panel to workspace

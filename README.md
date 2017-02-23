@@ -2,22 +2,22 @@
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/version-1.1.3-orange.svg" alt="Package version">
+  <img src="https://img.shields.io/badge/version-1.1.4-orange.svg" alt="Package version">
 </p>
 
 <p align="center">
   <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/screenshot.png?raw=true">
 </p>
 
-## Overview
-- [Introduction](#introduction)
-- [Dependencies](#dependencies)
-- [Sidebar](#sidebar)
-- [Message Panel](#message-panel)
-- [Tool Bar](#tool-bar)
-- [Configuration](#configuration)
-- [Supported Commands](#supported-commands)
-- [Authors](#authors)
+[comment]## Overview
+[comment]- [Introduction](#introduction)
+[comment]- [Dependencies](#dependencies)
+[comment]- [Sidebar](#sidebar)
+[comment]- [Message Panel](#message-panel)
+[comment]- [Tool Bar](#tool-bar)
+[comment]- [Configuration](#configuration)
+[comment]- [Supported Commands](#supported-commands)
+[comment]- [Authors](#authors)
 
 ## Introduction
 
