@@ -137,7 +137,7 @@ There are some settings that are important to set before you can use all feature
 
 ## Keymap bindings
 
-The TeSSLa package provides some keymap bindings to increase the work-flow. The following list contains all provided keymap bindings and their resulting effects.
+The TeSSLa package provides some keymap bindings to improve the work-flow. The following list contains all provided keymap bindings and their resulting effects.
 
 | Keymap                            | Effect                            |
 |:----------------------------------|:----------------------------------|
