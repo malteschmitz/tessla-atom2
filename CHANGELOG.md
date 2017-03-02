@@ -1,3 +1,8 @@
+## 1.1.5 (March 2, 2017)
+Buf-fixes:
+  - Fixed an error that occurred when running 'compile and run project'. The package will throw an error when trying to remove a zlog.conf file that is not existing before the first compilation.
+  - Improved resizing the sections inside the sidebar. Sometimes the lower area of the sidebar is not fully scrollable.
+
 ## 1.1.4 (February 23, 2017)
 Features:
   - Added keymap-bindings support. A full list of keymap-bindings is available in the `Packages > TeSSLa` submenu
