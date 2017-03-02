@@ -189,6 +189,7 @@
     padding-left: 10px;
     margin-bottom: 7px;
     border-left: 2px solid transparent;
+    position: relative;
   }
 
   // ul.list-formatted-output > li.active {
@@ -206,7 +207,7 @@
     display: block;
     float: left;
   }
-  
+
   ul.list-formatted-output > li > span:nth-child(3) {
     float: right;
     color: @text-color-subtle;
@@ -246,7 +247,7 @@
   ul.list-formatted-output > li:hover > span {
     color: @text-color-highlight;
   }
-  
+
   ul.list-formatted-output > li:hover > span:nth-child(3) {
     color: @text-color-subtle;
   }
@@ -375,8 +376,8 @@
       list-style-type: none;
       padding: 0px 5px 0px 0px;
       text-overflow: ellipsis;
-    	white-space: nowrap;
-    	overflow: hidden;
+      white-space: nowrap;
+      overflow: hidden;
       cursor: pointer;
     }
   }
