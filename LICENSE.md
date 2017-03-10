@@ -1,4 +1,4 @@
-Copyright (c) 2017 Denis-Michael Lux
+Copyright (c) 2017 Denis-Michael Lux, Malte Schmitz
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
