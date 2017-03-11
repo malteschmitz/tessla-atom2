@@ -1,5 +1,5 @@
 {
-  ".workspace .editor:not(.mini)": {
+  ".platform-darwin .workspace .editor:not(.mini)": {
     "cmd-shift-t": "tessla:toggle",
     "cmd-b":       "tessla:build-c-code",
     "cmd-e":       "tessla:run-c-code",
@@ -7,5 +7,14 @@
     "cmd-t":       "tessla:build-and-run-project",
     "ctrl-c":      "tessla:stop-current-process",
     "cmd-enter":   "tessla:set-up-split-view"
+  },
+  ".platform-win32 .workspace .editor:not(.mini), .platform-linux .workspace .editor:not(.mini)": {
+    "ctrl-shift-t": "tessla:toggle",
+    "ctrl-b":       "tessla:build-c-code",
+    "ctrl-e":       "tessla:run-c-code",
+    "ctrl-r":       "tessla:build-and-run-c-code",
+    "ctrl-t":       "tessla:build-and-run-project",
+    "ctrl-alt-c":       "tessla:stop-current-process",
+    "ctrl-enter":   "tessla:set-up-split-view"
   }
 }
