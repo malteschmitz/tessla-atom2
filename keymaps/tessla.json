@@ -14,7 +14,7 @@
     "ctrl-e":       "tessla:run-c-code",
     "ctrl-r":       "tessla:build-and-run-c-code",
     "ctrl-t":       "tessla:build-and-run-project",
-    "ctrl-alt-c":       "tessla:stop-current-process",
+    "ctrl-shift-c": "tessla:stop-current-process",
     "ctrl-enter":   "tessla:set-up-split-view"
   }
 }
