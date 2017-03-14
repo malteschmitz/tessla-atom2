@@ -1,5 +1,9 @@
+## 1.1.6 (March 14, 2017)
+Bug-fixes:
+  - Untitled tabs do not force Atom to crash anymore. Closes [#1](https://github.com/dmlux/TeSSLa/issues/1)
+
 ## 1.1.5 (March 2, 2017)
-Buf-fixes:
+Bug-fixes:
   - Fixed an error that occurred when running 'compile and run project'. The package will throw an error when trying to remove a zlog.conf file that is not existing before the first compilation.
   - Improved resizing the sections inside the sidebar. Sometimes the lower area of the sidebar is not fully scrollable.
 
@@ -7,12 +11,12 @@ Buf-fixes:
 Features:
   - Added keymap-bindings support. A full list of keymap-bindings is available in the `Packages > TeSSLa` submenu
   - Added a row counter to the formatted output list in the sidebar
-  
+
 Bug-fixes:
   - Renamed the emitter event 'distribute-unsued-functions' to 'distribute-unused-functions'
   - Fixed an error that occurred when deleting the content of the build directory and running the project after that. Then the `zlog.conf` file was not created again and the compilation process terminated with an error
   - Fixed an error that occurred when patching the Assembly file. The `opt` command had no prefix containing the path to the `opt` binary. In some casees this caused an `could not find opt` error
-  - Fixed an error that occurred when deactivating the package. The sidebar and message-panel where not removed from workspace 
+  - Fixed an error that occurred when deactivating the package. The sidebar and message-panel where not removed from workspace
   - Fixed an error that occurred when toggling the package. The tool-bar sometimes showed inverted toggle behavior compared to the other components
   - Changed cusor in the formatted output list in the sidebar to default cursor when hovering over the rows of the sublists
   - Changed the relative links in the `README.md` file to absolute links so the images are displayed on the `atom.io` package-site
