@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/version-1.2.0-orange.svg" alt="Package version">
+  <img src="https://img.shields.io/badge/version-1.2.1-orange.svg" alt="Package version">
 </p>
 
 <p align="center">
@@ -18,16 +18,16 @@ This Atom-packages provides some IDE-like functions for C-Code and the TeSSLa LT
 To use the full range of functions that are provided by this package some dependencies are needed:
 - [InstrumentFunctions library](https://github.com/imdea-software/LLVM_Instrumentation_Pass)
 - [TeSSLaServer](https://github.com/imdea-software/TesslaServer)
-  
+
 The following dependencies are installed automatically by this package:
 - [[Atom] tool-bar](https://atom.io/packages/tool-bar)
 - [[Atom] Linter](https://atom.io/packages/linter)
 - [[Atom] linter-gcc](https://atom.io/packages/linter-gcc)
-  
+
 The icons that are used in this package are provided by:
 - [ionicons](http://ionicons.com)
 - [Font Awesome](http://fontawesome.io)
-  
+
 
 **Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
 
@@ -35,7 +35,7 @@ The icons that are used in this package are provided by:
 
 <img align="left" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/sidebar.png?raw=true">
 
-The sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance. 
+The sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance.
 
 The upper area shows C functions that appear in the C files and C functions that are observed from within the TeSSLa sources of the current project. Each C file that can be found recursively in the current project directory is considered when fetching function singnatures. On the other hand only the first found TeSSLa source file is used by the IDE.
 
@@ -47,16 +47,16 @@ The rightmost text in each row indicates the position where the function was fou
 
 The lower area of the sidebar contains the formatted output from the TeSSLaServer. The output is a list that contains each output identifier and the value that the identifier evaluates to at a certain time. Each output list is initially hidden and can be displayed by clicking the identifier. The entries within the list are displayed in two columns. The left column shows the time when the identifier evaluates to the value in the right column. The time format is `HH:MM:SS.mmm`. 
 
-The border above the lower area contains a resize handle which can be used to change the space each area takes up. The whole sidebar can be resized as well as both areas inside of it. On the left edge there is a resize handle to adjust the width. The sidebar has a minimum width and a maximum width that can not be exceeded. 
+The border above the lower area contains a resize handle which can be used to change the space each area takes up. The whole sidebar can be resized as well as both areas inside of it. On the left edge there is a resize handle to adjust the width. The sidebar has a minimum width and a maximum width that can not be exceeded.
 
-## Message Panel 
+## Message Panel
 
 The message panel is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up into several streams each with its own reiter. The user can select which reiter should be active. Only the contents of the active reiter are displayed in the the panel body. If there were any messages that belong to an other stream the little notification badge in front of the reiter name will be incremented and colored depending on which reiter was updated. Switching the active reiter will clear the notification. The counter will be reset and the color will be set back to the original color.
 
-At the top of the message panel there is a resize handle which can be used to adjust the height of the panel and hence the amount of visible content in the active stream. On the top right there are three buttons. The buttons can be used to interact with the message panel. 
+At the top of the message panel there is a resize handle which can be used to adjust the height of the panel and hence the amount of visible content in the active stream. On the top right there are three buttons. The buttons can be used to interact with the message panel.
 - The X button closes the message panel.
 - The garbage button clears the active content in the body of the message panel.
-- the write button opens a save dialog to save the content of the active stream. 
+- the write button opens a save dialog to save the content of the active stream.
 
 Each message belongs to at least one stream:
 - The `Console` stream contains all messages that were returned by the compiled C sources and the messages returned by TeSSLaServer.
@@ -85,13 +85,13 @@ To compile and run binaries compiled from source code the tool bar provides some
 
 1. If the build directory in the project directory is not already created it will be created.
 2. All C files in the current project directory are collected recursively and an Assembly file is compiled from them. The name format of the Assembly file is `<project-name>.bc`.
-3. The Assembly code is patched by appending external symbols from the instrument functions library to each observed function. The file name format is `instrumented_<project-name>.bc`. 
+3. The Assembly code is patched by appending external symbols from the instrument functions library to each observed function. The file name format is `instrumented_<project-name>.bc`.
 4. The patched Assembly file is compiled into an executable binary. The binary name format is `instrumented_<project-name>`
 5. A `zlog.conf` file which is needed to format the output of the instrumented binary is created in the build directory.
 6. The instrumented binary is executed which generates a trace file containing information about the function calls of the observed functions. Each line in this trace file is formatted by given rules in the `zlog.conf`. The name format of the trace file is `instrumented_<project-name>.trace`.  
 7. The projected directory is scanned recursively to find a TeSSLa file. The first found TeSSLa file will be taken to compile it into a JSON file containing an AST (Abstract Syntax Tree).
 8. At last the AST in the JSON file and trace file are given to the TeSSLaServer which will generate the output specified in the TeSSLa file.
-  
+
 <img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/stop-process.png?raw=true"> This button will stop the process that is currently running. This process can be a compilation process or a running binary.
 
 <img align="left" width="25" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/toggle-message-panel.png?raw=true"> This button will toggle the message panel.
@@ -105,30 +105,30 @@ To compile and run binaries compiled from source code the tool bar provides some
 <p align="center">
   <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/menu.png?raw=true">
 </p>
-In the "packages" menu there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the [keymap bindings](#keymap-bindings) section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace. 
+In the "packages" menu there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the keymap bindings section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace.
 
 
 ## Configuration
 
 There are some settings that are important to set before you can use all features this packages provides:
-- _Path to clang compiler_: This should be the path were the clang compiler is located on your system. 
+- _Path to clang compiler_: This should be the path were the clang compiler is located on your system.
 
- **Note:** on MacOS/OS X the clang compiler installed by Xcode/Xcode command line tools does not have the LLVM extensions. To be able to use all features provided by this package you have to build clang by your self. 
+ **Note:** on MacOS/OS X the clang compiler installed by Xcode/Xcode command line tools does not have the LLVM extensions. To be able to use all features provided by this package you have to build clang by your self.
 
 - _Path to instrument functions library_: This should be the path to the `libInstrumentFunctions.so`. Further information can be found [here](https://github.com/imdea-software/LLVM_Instrumentation_Pass).
 
-- _Path to TeSSLa compiler_: This should be the path were the TeSSLa compiler is located on your system. 
+- _Path to TeSSLa compiler_: This should be the path were the TeSSLa compiler is located on your system.
 
 - _Path to TeSSLa server_: This should be the path were the TeSSLaServer is located on your system. The TeSSLaServer and further information about it can be found [here](https://github.com/imdea-software/TesslaServer)
 
-- _zlog string format for variables_: This represents the format of how variables are formatted in the `.trace`-files. 
+- _zlog string format for variables_: This represents the format of how variables are formatted in the `.trace`-files.
 
  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
-  
+
 - _zlog string format for function calls_: This represents the format of how function calls are formatted in the `.trace`-files.
 
  **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
-  
+
 - _Animation speed_: This value will set the speed of animations triggered in this package. The value represents a duration milliseconds
   
 <p align="center">
@@ -154,8 +154,8 @@ There are some global commands other packages can trigger or subscribe to. A lis
 
 | Command                           | Description                       |
 |:----------------------------------|:----------------------------------|
-| `tessla:toggle`                   | This command causes the package to toggle all components of the package including sidebar and message panel | 
-| `tessla:set-up-split-view`        | This command causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed | 
+| `tessla:toggle`                   | This command causes the package to toggle all components of the package including sidebar and message panel |
+| `tessla:set-up-split-view`        | This command causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed |
 | `tessla:toggle-sidebar`           | This command causes the package to toggle the sidebar |
 | `tessla:toggle-message-panel`     | This command causes the package to toggle the message panel |
 | `tessla:build-and-run-c-code`     | This command causes the package to build and run a binary compiled from C code that was found in the active project |

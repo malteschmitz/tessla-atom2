@@ -1,3 +1,7 @@
+## 1.2.1 (March 21, 2017)
+Bug-fixes:
+  - Fixed [#1](https://github.com/malteschmitz/tessla-atom/issues/1)
+
 ## 1.2.0 (March 10, 2017)
 Features:
   - Added support for a docker image containing all the necessary command line tools.
