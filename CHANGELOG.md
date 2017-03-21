@@ -1,6 +1,7 @@
 ## 1.2.0 (March 10, 2017)
 Features:
   - Added support for a docker image containing all the necessary command line tools.
+  - Improved cross-platform functionality. Works now on Windows machines, too.
 
 ## 1.1.6 (March 14, 2017)
 Bug-fixes:
