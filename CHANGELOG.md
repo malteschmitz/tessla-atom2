@@ -1,3 +1,13 @@
+## 1.3.0 (April 28, 2017)
+Bug-fixes:
+  - Fixed a bug that causes the Package to not show the syntax error markers in the text-editors
+
+Features:
+  - The package now only supports Docker.
+  - The Docker container is set up only once and then reused for each command
+  - Improved the message panel. Each entry is now highlightable and a timestamp in front of each entry is added.
+  - Each Log entry has a label that is colored to get a better overview of what happend for each command.
+
 ## 1.2.1 (March 21, 2017)
 Bug-fixes:
   - Fixed [#1](https://github.com/malteschmitz/tessla-atom/issues/1)

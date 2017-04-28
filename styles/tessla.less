@@ -41,14 +41,15 @@
       span {
         display: table-cell;
         vertical-align: middle;
-        padding: 4px 0px 5px 0px;
+        padding: 6px 0px 7px 0px;
+        border-bottom: 1px solid darken(@base-background-color, 2%);
       }
 
       span.time {
         padding: 3px 5px 3px 0px;
         color: @text-color-subtle;
-        text-align: center;
-        width: 50px;
+        text-align: right;
+        width: 45px;
       }
 
       span.label {
@@ -60,7 +61,8 @@
           border-radius: 5px;
           padding: 3px;
           color: @text-color-highlight;
-          margin: 3px 0px;
+          margin: 3px 3px;
+          border: 0px;
         }
 
         span.CMD {
