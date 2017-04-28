@@ -18,8 +18,13 @@
   },
   "dependencies": {
     "atom-package-deps": "^4.3.1",
+    "copy-dir": "^0.3.0",
     "download-file": "^0.1.5",
+    "fs-extra": "^3.0.0",
+    "install": "^0.8.9",
     "jquery": "^3.1.1",
+    "npm": "^4.5.0",
+    "os": "^0.1.1",
     "scan-folder": "^1.0.0",
     "unzip": "^0.1.11"
   },
