@@ -14,7 +14,7 @@
     ],
     "#tessla-message-panel-wrapper": [
       {
-        "label": "Copy", 
+        "label": "Copy",
         "command": "core:copy"
       }
     ]
@@ -58,7 +58,11 @@
             },
             {
               "label": "Set up split view",
-              "command": "tessla:set-up-split-view"    
+              "command": "tessla:set-up-split-view"
+            },
+            {
+              "label": "Restore all view Components",
+              "command": "tessla:reset-view"
             }
           ]
         }
