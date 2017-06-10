@@ -1,3 +1,11 @@
+## 1.4.0 (June 10, 2017)
+Features:
+  - Added Atom Dock support
+  - Added automatic Download for the TeSSLa image. The Image is loaded when this plugin is started the first time.
+    If the download was already done a boolean flag in the settings will be set. To get asked for download on the
+    next restart the checkbox in the settings pane has to be uncheck before restart.
+  - Added a bunch of additional bugs..... uuuhm features...
+
 ## 1.3.0 (April 28, 2017)
 Bug-fixes:
   - Fixed a bug that causes the Package to not show the syntax error markers in the text-editors
