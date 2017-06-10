@@ -3,3 +3,4 @@ npm-debug.log
 node_modules
 build
 .gcc-flags.json
+docker-image
