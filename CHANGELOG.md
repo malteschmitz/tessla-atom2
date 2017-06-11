@@ -2,6 +2,11 @@
 Bug-fixes:
   - Highlighted commands from the console views now can be copied by using native key bindings
   - An error that occurs when using the toggle command twice is fixed.
+  - Fixed the filter support for the logging views
+
+Features:
+  - Added new Docker type flags in the log view.
+  - Added indention after breaking line in the log view.
 
 ## 1.4.0 (June 10, 2017)
 Features:
