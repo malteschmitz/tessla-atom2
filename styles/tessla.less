@@ -266,3 +266,29 @@
   padding-left: 15px;
   text-indent: -15px;
 }
+
+.tab[data-type=LogView] > div.title::before,
+.tab[data-type=MessageView] > div.title::before {
+  padding-right: 5px;
+  font: normal normal normal @fa-font-size-base/@fa-line-height-base FontAwesome;
+}
+
+.tab.logViewTab > div.title::before {
+  content: "\f017";
+}
+
+.tab.warningsTab > div.title::before {
+  content: "\f071";
+}
+
+.tab.errorsTeSSLaTab > div.title::before {
+  content: "\f06a";
+}
+
+.tab.errorsCTab > div.title::before {
+  content: "\f06a";
+}
+
+.tab.consoleTab > div.title::before {
+  content: "\f120";
+}
