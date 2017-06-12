@@ -36,8 +36,6 @@
     }
   },
   "package-deps": [
-    "tool-bar",
-    "linter",
-    "linter-gcc"
+    "tool-bar"
   ]
 }

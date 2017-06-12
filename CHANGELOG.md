@@ -1,3 +1,11 @@
+## 1.4.2 (June 12, 2017)
+Buf-fixes:
+  - removed linter form deps
+
+Features:
+  - Added icons to the tabs in the lower docker.
+  - Improved package activation time
+
 ## 1.4.1 (June 11, 2017)
 Bug-fixes:
   - Highlighted commands from the console views now can be copied by using native key bindings
@@ -7,7 +15,6 @@ Bug-fixes:
 Features:
   - Added new Docker type flags in the log view.
   - Added indention after breaking line in the log view.
-  - Added icons to the tabs in the lower docker.
 
 ## 1.4.0 (June 10, 2017)
 Features:
