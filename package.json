@@ -1,7 +1,7 @@
 {
-  "name": "tessla",
+  "name": "tessla2",
   "main": "./lib/tessla",
-  "version": "1.4.3",
+  "version": "0.0.0",
   "description": "This packages provides some IDE-like functions for C-Code and TeSSLa specifications",
   "keywords": [
     "tessla",
@@ -11,7 +11,7 @@
   "activationCommands": {
     "atom-workspace": "tessla:toggle"
   },
-  "repository": "https://github.com/malteschmitz/tessla-atom",
+  "repository": "https://github.com/malteschmitz/tessla2-atom",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
