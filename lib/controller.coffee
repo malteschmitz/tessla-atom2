@@ -20,7 +20,6 @@ module.exports=
       @containerBuild = path.join @containerDir, "build"
 
 
-
     createZLogFile: ->
       binaryName = @viewManager.activeProject.binName
       zlogFile = path.join @containerDir, "zlog.conf"
@@ -38,7 +37,6 @@ module.exports=
       fs.writeFileSync zlogFile, formats + rules
 
 
-
     onCompileAndRunCCode: ->
       unless @viewManager.activeProject.projPath?
         @viewManager.showNoProjectNotification()
@@ -48,13 +46,10 @@ module.exports=
         @viewManager.showCurrentlyRunningProcessNotification()
         return
 
-      console.log "compile and run c code"
-
       @viewManager.saveEditors()
       @onBuildCCode
         buildAssembly: no
         onSuccess: -> @onRunBinary
-
 
 
     onCompileAndRunProject: ->
@@ -75,9 +70,7 @@ module.exports=
               onSuccess: -> @onBuildTeSSLa
                 onError: -> @viewManager.highlightTeSSLaError
                 onSuccess: -> @onRunTeSSLa
-                  onSuccess: (lines) ->
-                    @viewManager.views.formattedOutputView.update lines
-
+                  onSuccess: (lines) -> @viewManager.views.formattedOutputView.update lines
 
 
     onPatchAssembly: ({ onSuccess, onError }) ->
@@ -104,7 +97,6 @@ module.exports=
       args = args.concat ["-o", "build/instrumented_#{binaryName}.bc"]
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -133,7 +125,6 @@ module.exports=
           errorCallback.call @
 
 
-
     onBuildTeSSLa: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -155,7 +146,6 @@ module.exports=
       ]
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -202,7 +192,6 @@ module.exports=
             file: fileActiveProject
 
 
-
     onBuildAssembly: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -217,7 +206,6 @@ module.exports=
       ]
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -246,13 +234,10 @@ module.exports=
           errorCallback.call @
 
 
-
     onBuildCCode: ({ buildAssembly, onSuccess, onError }) ->
       assemblyFlag = buildAssembly ? no
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
-
-      console.log "on build c code"
 
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
@@ -279,7 +264,6 @@ module.exports=
         path.relative @viewManager.activeProject.projPath, arg .replace /\\/g, "/"
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -308,7 +292,6 @@ module.exports=
           errorCallback.call @
 
 
-
     onRunPatchedBinary: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -323,7 +306,6 @@ module.exports=
       args = ["exec", "tessla", "./build/instrumented_#{@viewManager.activeProject.binName}"]
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -357,7 +339,6 @@ module.exports=
           errorCallback.call @
 
 
-
     onRunBinary: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -376,7 +357,6 @@ module.exports=
       args = ["exec", "tessla", "./build/#{@viewManager.activeProject.binName}"]
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args
 
       binary = "docker #{args.join " "}"
@@ -411,7 +391,6 @@ module.exports=
           errorCallback.call @
 
 
-
     onRunTeSSLa: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -444,7 +423,6 @@ module.exports=
       args = ["exec", "tessla", "sh", "-c", "'#{outputArgs.join " "}'"];
 
       @checkDockerContainer()
-      console.log "spawn docker #{args.join " "}"
       @runningProcess = childProcess.spawn "docker", args,
         shell: yes
 
@@ -479,12 +457,10 @@ module.exports=
           errorCallback.call @
 
 
-
     onStopRunningProcess: ->
       if @runningProcess?
         @runningProcess.kill 'SIGKILL'
         @viewManager.views.logView.addEntry MESSAGE_TYPE.CMD, "kill -9 #{@runningProcess.pid}"
-
 
 
     checkDockerContainer: ->
@@ -496,7 +472,6 @@ module.exports=
 
         childProcess.spawnSync 'docker', args
         @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, "docker #{args.join " "}"
-
 
 
     transferFilesToContainer: ->
