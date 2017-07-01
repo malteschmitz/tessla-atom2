@@ -9,7 +9,7 @@
     "ide"
   ],
   "activationCommands": {
-    "atom-workspace": "tessla:toggle"
+    "atom-workspace": "tessla2:toggle"
   },
   "repository": "https://github.com/malteschmitz/tessla2-atom",
   "license": "MIT",

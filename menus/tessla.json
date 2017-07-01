@@ -6,7 +6,7 @@
       },
       {
         "label": "Toggle TeSSLa",
-        "command": "tessla:toggle"
+        "command": "tessla2:toggle"
       },
       {
         "type": "separator"
@@ -28,41 +28,41 @@
           "submenu": [
             {
               "label": "Toggle",
-              "command": "tessla:toggle"
+              "command": "tessla2:toggle"
             },
             {
               "type": "separator"
             },
             {
               "label": "Build C code",
-              "command": "tessla:build-c-code"
+              "command": "tessla2:build-c-code"
             },
             {
               "label": "Run C code",
-              "command": "tessla:run-c-code"
+              "command": "tessla2:run-c-code"
             },
             {
               "label": "Build and Run C code",
-              "command": "tessla:build-and-run-c-code"
+              "command": "tessla2:build-and-run-c-code"
             },
             {
               "label": "Build and Run Project",
-              "command": "tessla:build-and-run-project"
+              "command": "tessla2:build-and-run-project"
             },
             {
               "label": "Stop current process",
-              "command": "tessla:stop-current-process"
+              "command": "tessla2:stop-current-process"
             },
             {
               "type": "separator"
             },
             {
               "label": "Set up split view",
-              "command": "tessla:set-up-split-view"
+              "command": "tessla2:set-up-split-view"
             },
             {
               "label": "Restore all view Components",
-              "command": "tessla:reset-view"
+              "command": "tessla2:reset-view"
             }
           ]
         }
