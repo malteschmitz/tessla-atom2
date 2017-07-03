@@ -3,9 +3,8 @@ childProcess = require "child_process"
 fs = require "fs-extra"
 os = require "os"
 
-MessageView = require "./message-view"
 FileManager = require "./file-manager"
-{ MESSAGE_TYPE } = require "./constants";
+{ MESSAGE_TYPE } = require "./constants"
 
 module.exports=
   class Controller
@@ -24,14 +23,12 @@ module.exports=
       binaryName = @viewManager.activeProject.binName
       zlogFile = path.join @containerDir, "zlog.conf"
 
-      # define format for events
       formats  = "[formats]\n"
       formats += "variable_values = \"#{atom.config.get "tessla2.variableValueFormatting"}\"\n"
       formats += "function_calls = \"#{atom.config.get "tessla2.functionCallFormatting"}\"\n"
-      # define rules where to put information gathered
-      rules  = "[rules]\n";
-      rules += "variable_values_cat.DEBUG \"instrumented_#{binaryName}.trace\"; variable_values\n";
-      rules += "function_calls_cat.DEBUG \"instrumented_#{binaryName}.trace\"; function_calls\n";
+      rules    = "[rules]\n";
+      rules   += "variable_values_cat.DEBUG \"instrumented_#{binaryName}.trace\"; variable_values\n";
+      rules   += "function_calls_cat.DEBUG \"instrumented_#{binaryName}.trace\"; function_calls\n";
 
       fs.unlink zlogFile if fs.existsSync zlogFile
       fs.writeFileSync zlogFile, formats + rules
@@ -82,7 +79,6 @@ module.exports=
 
       binaryName = @viewManager.activeProject.binName
 
-      # set up command
       args = [
         "exec", "tessla", "/usr/lib/llvm-3.8/bin/opt", "-load", "/InstrumentFunctions/libInstrumentFunctions.so",
         "-instrument_function_calls", path.join "build", "#{binaryName}.bc"
@@ -91,8 +87,7 @@ module.exports=
       FileManager.collectCFunctionsFromSourceFile
         sourceFile: @viewManager.activeProject.tesslaFiles[0]
         projectPath: @viewManager.activeProject.projPath
-      .forEach (func) ->
-        args = args.concat ["-instrument", func.functionName]
+      .forEach (func) -> args = args.concat ["-instrument", func.functionName]
 
       args = args.concat ["-o", "build/instrumented_#{binaryName}.bc"]
 
@@ -100,11 +95,11 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry data.toString()
+        @viewManager.views.errorsCView.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on "close", () =>
@@ -114,12 +109,12 @@ module.exports=
         @viewManager.disableStopButton()
 
         if errors.length is 0
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "Successfully patched Assembly"
+          @viewManager.views.logView.addEntry ["message", "Successfully patched Assembly"]
           atom.notifications.addSuccess "Successfully patched Assembly"
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while patching Assembly"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while patching Assembly"]
           atom.notifications.addError "Errors while patching Assembly",
             detail: errors.join ""
           errorCallback.call @
@@ -149,15 +144,13 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       outputs = []
-      @runningProcess.stdout.on "data", (data) =>
-        outputs.push data.toString()
+      @runningProcess.stdout.on "data", (data) => outputs.push data.toString()
 
       errors = []
-      @runningProcess.stderr.on "data", (data) =>
-        errors.push data.toString()
+      @runningProcess.stderr.on "data", (data) => errors.push data.toString()
 
       @runningProcess.on "close", () =>
         @runningProcess = null
@@ -173,7 +166,7 @@ module.exports=
 
           fs.writeFileSync path.join(@containerBuild, "instrumented_#{@viewManager.activeProject.binName}.tessla.json"), stdout
 
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "Successfully compiled #{path.relative(@viewManager.activeProject.projPath, fileActiveProject).replace(/\\/g, "/")}"
+          @viewManager.views.logView.addEntry ["message", "Successfully compiled #{path.relative(@viewManager.activeProject.projPath, fileActiveProject).replace(/\\/g, "/")}"]
           @viewManager.removeTeSSLaSourceMarkers()
 
           atom.notifications.addSuccess "Successfully compiled TeSSLa file"
@@ -181,8 +174,8 @@ module.exports=
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while compiling #{fileActiveProject}"
-          @viewManager.views.errorsTeSSLaViews.addEntry stderr + stdout
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling #{fileActiveProject}"]
+          @viewManager.views.errorsTeSSLaViews.addEntry [stderr + stdout]
 
           atom.notifications.addError "Errors while compiling TeSSLa file",
             detail: stderr + stdout
@@ -209,11 +202,11 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry data.toString()
+        @viewManager.views.errorsCView.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on "close", () =>
@@ -223,12 +216,12 @@ module.exports=
         @viewManager.disableStopButton()
 
         if errors.length is 0
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "Successfully compiled Assembly"
+          @viewManager.views.logView.addEntry ["message", "Successfully compiled Assembly"]
           atom.notifications.addSuccess "Successfully compiled Assembly"
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while compiling Assembly"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling Assembly"]
           atom.notifications.addError "Errors while compiling Assembly",
             detail: errors.join ""
           errorCallback.call @
@@ -267,11 +260,11 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry data.toString()
+        @viewManager.views.errorsCView.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on "close", () =>
@@ -281,12 +274,12 @@ module.exports=
         @viewManager.disableStopButton()
 
         if errors.length is 0
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "Successfully compiled C files"
+          @viewManager.views.logView.addEntry ["message", "Successfully compiled C files"]
           atom.notifications.addSuccess "Successfully compiled C files"
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while compiling C files"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling C files"]
           atom.notifications.addError "Errors while compiling C files",
             detail: errors.join ""
           errorCallback.call @
@@ -300,8 +293,7 @@ module.exports=
       @viewManager.enableStopButton()
 
       traceFile = path.join @containerDir, "instrumented_#{@viewManager.activeProject.binName}.trace"
-      if fs.existsSync traceFile
-        fs.renameSync traceFile, "#{traceFile}.#{+new Date}"
+      fs.renameSync traceFile, "#{traceFile}.#{+new Date}" if fs.existsSync traceFile
 
       args = ["exec", "tessla", "./build/instrumented_#{@viewManager.activeProject.binName}"]
 
@@ -309,16 +301,16 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       outputs = []
       @runningProcess.stdout.on "data", (data) =>
-        @viewManager.views.consoleView.addEntry data.toString()
+        @viewManager.views.consoleView.addEntry [data.toString()]
         outputs.push data.toString()
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry data.toString()
+        @viewManager.views.errorsCView.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on 'close', (code, signal) =>
@@ -327,14 +319,14 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry "Process exited with code #{code}" if code?
-        @viewManager.views.consoleView.addEntry "Process was killed due to signal #{signal}" if signal?
+        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
+        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
 
         if errors.length is 0
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while running the patched binary"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while running the patched binary"]
           atom.notifications.addError('Errors while running the patched binary', { detail: errors.join('') });
           errorCallback.call @
 
@@ -360,16 +352,16 @@ module.exports=
       @runningProcess = childProcess.spawn "docker", args
 
       binary = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, binary
+      @viewManager.views.logView.addEntry ["Docker", binary]
 
       outputs = []
       @runningProcess.stdout.on "data", (data) =>
-        @viewManager.views.consoleView.addEntry data.toString()
+        @viewManager.views.consoleView.addEntry [data.toString()]
         outputs.push data.toString()
 
       errors = []
       @runningProcess.stderr.on 'data', (data) =>
-        @viewManager.views.errorsCView.addEntry data.toString()
+        @viewManager.views.errorsCView.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on 'close', (code, signal) =>
@@ -378,14 +370,14 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry "Process exited with code #{code}" if code?
-        @viewManager.views.consoleView.addEntry "Process was killed due to signal #{signal}" if signal?
+        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
+        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
 
         if errors.length is 0
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while running C binary"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while running C binary"]
           atom.notifications.addError "Errors while running the C binary",
             detail: errors.join ""
           errorCallback.call @
@@ -427,16 +419,16 @@ module.exports=
         shell: yes
 
       command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, command
+      @viewManager.views.logView.addEntry ["Docker", command]
 
       outputs = []
       @runningProcess.stdout.on "data", (data) =>
-        @viewManager.views.consoleView.addEntry data.toString()
+        @viewManager.views.consoleView.addEntry [data.toString()]
         outputs.push data.toString()
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsTeSSLaViews.addEntry data.toString()
+        @viewManager.views.errorsTeSSLaViews.addEntry [data.toString()]
         errors.push data.toString()
 
       @runningProcess.on 'close', (code, signal) =>
@@ -444,14 +436,14 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry "Process exited with code #{code}" if code?
-        @viewManager.views.consoleView.addEntry "Process was killed due to signal #{signal}" if signal?
+        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
+        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
 
         if errors.length is 0
           successCallback.call @, outputs
 
         else
-          @viewManager.views.logView.addEntry MESSAGE_TYPE.MSG, "An error occurred while running the TeSSLa server"
+          @viewManager.views.logView.addEntry ["message", "An error occurred while running the TeSSLa server"]
           atom.notifications.addError "Errors while running TeSSLa server",
             detail: errors.join ""
           errorCallback.call @
@@ -460,7 +452,7 @@ module.exports=
     onStopRunningProcess: ->
       if @runningProcess?
         @runningProcess.kill 'SIGKILL'
-        @viewManager.views.logView.addEntry MESSAGE_TYPE.CMD, "kill -9 #{@runningProcess.pid}"
+        @viewManager.views.logView.addEntry ["command", "kill -9 #{@runningProcess.pid}"]
 
 
     checkDockerContainer: ->
@@ -471,21 +463,20 @@ module.exports=
         ]
 
         childProcess.spawnSync 'docker', args
-        @viewManager.views.logView.addEntry MESSAGE_TYPE.DKR, "docker #{args.join " "}"
+        @viewManager.views.logView.addEntry ["Docker", "docker #{args.join " "}"]
 
 
     transferFilesToContainer: ->
       fs.emptyDirSync @containerDir
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.CMD, "rm -rf ${this.containerDir}/*"
+      @viewManager.views.logView.addEntry ["command", "rm -rf ${this.containerDir}/*"]
 
       fs.mkdirSync path.join @containerDir, "build"
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.CMD, "mkdir ${this.containerBuild}"
+      @viewManager.views.logView.addEntry ["command", "mkdir ${this.containerBuild}"]
 
       @createZLogFile()
-      @viewManager.views.logView.addEntry MESSAGE_TYPE.CMD, "rsync -r --exclude=build,.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"
+      @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=build,.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]
 
       fs.copy @viewManager.activeProject.projPath, @containerDir,
         filter: (src) ->
-          yes if path.posix.basename(src) is '.gcc-flags.json'
           no if path.posix.basename(src) is 'build'
           yes

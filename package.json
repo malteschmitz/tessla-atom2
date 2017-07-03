@@ -33,9 +33,15 @@
       "versions": {
         "^0 || ^1": "consumeToolBar"
       }
+    },
+    "flexible-panels": {
+      "versions": {
+        ">=1.17.0": "consumeFlexiblePanels"
+      }
     }
   },
   "package-deps": [
-    "tool-bar"
+    "tool-bar",
+    "flexible-panels"
   ]
 }
