@@ -23,9 +23,9 @@ module.exports=
     containerDir = path.join os.homedir(), ".tessla-env"
     imageDir = path.join path.dirname(__dirname), "docker-image"
 
-    unless atom.config.get "tessla2.alreadySetUpDockerContainer" is yes
+    unless atom.config.get("tessla2.alreadySetUpDockerContainer") is yes
       Downloader.download
-        url: "http://rv.isp.uni-luebeck.de/tessla/tessla-docker.zip"
+        url: "http://rv.isp.uni-luebeck.de/tessla/tessla2-docker.zip"
         filePath: path.join imageDir, "tessla-docker.zip"
         callback: ->
 
@@ -85,7 +85,8 @@ module.exports=
           item.destroy()
 
   deactivate: ->
-    @subscriptions.dispose();
+    @subscriptions.dispose()
+    console.log "docker rm -f tessla"
     childProcess.spawnSync "docker", ["rm", "-f", "tessla"]
 
   toggle: ->
@@ -121,7 +122,7 @@ module.exports=
     ]
 
     cols = [
-        name: "Description", type: "text", indentWrappedText: yes
+        name: "Description", type: "text"
       ,
         name: "Time", align: "center", fixedWidth: 95, type: "time"
     ]
@@ -261,7 +262,7 @@ module.exports=
       description: "This will set the speed of animations used in this package. The time is represented in milliseconds."
     alreadySetUpDockerContainer:
       type: "boolean"
-      default: false
+      default: no
       order: 4
       title: "Docker already set up?"
       description: "This flag is set to true if the docker container is already set up otherwise it will be set to false."

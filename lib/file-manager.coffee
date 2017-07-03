@@ -25,7 +25,8 @@ module.exports=
         fileLines.forEach (line) ->
           lineCnt++
 
-          while (match = regex.exec line)?
+          match = regex.exec line
+          while match?
             f = sourceFile.replace "#{projectPath}/", ""
             func = match[1]
 
@@ -34,6 +35,8 @@ module.exports=
               functionName: func
               line: lineCnt
               column: match.index
+
+            match = regex.exec line
 
         for key, funcs of namesAssoc
           names.push funcs

@@ -59,172 +59,9 @@ module.exports=
         return
 
       @viewManager.saveEditors()
-      @onBuildCCode
-        buildAssembly: yes
-        onSuccess: -> @onPatchAssembly
-          onSuccess: -> @onBuildAssembly
-            onSuccess: -> @onRunPatchedBinary
-              onSuccess: -> @onBuildTeSSLa
-                onError: -> @viewManager.highlightTeSSLaError
-                onSuccess: -> @onRunTeSSLa
-                  onSuccess: (lines) -> @viewManager.views.formattedOutputView.update lines
-
-
-    onPatchAssembly: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
-
-      @viewManager.disableButtons()
-      @viewManager.enableStopButton()
-
-      binaryName = @viewManager.activeProject.binName
-
-      args = [
-        "exec", "tessla", "/usr/lib/llvm-3.8/bin/opt", "-load", "/InstrumentFunctions/libInstrumentFunctions.so",
-        "-instrument_function_calls", path.join "build", "#{binaryName}.bc"
-      ]
-
-      FileManager.collectCFunctionsFromSourceFile
-        sourceFile: @viewManager.activeProject.tesslaFiles[0]
-        projectPath: @viewManager.activeProject.projPath
-      .forEach (func) -> args = args.concat ["-instrument", func.functionName]
-
-      args = args.concat ["-o", "build/instrumented_#{binaryName}.bc"]
-
-      @checkDockerContainer()
-      @runningProcess = childProcess.spawn "docker", args
-
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
-
-      errors = []
-      @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry [data.toString()]
-        errors.push data.toString()
-
-      @runningProcess.on "close", () =>
-        @runningProcess = null
-
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        if errors.length is 0
-          @viewManager.views.logView.addEntry ["message", "Successfully patched Assembly"]
-          atom.notifications.addSuccess "Successfully patched Assembly"
-          successCallback.call @
-
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while patching Assembly"]
-          atom.notifications.addError "Errors while patching Assembly",
-            detail: errors.join ""
-          errorCallback.call @
-
-
-    onBuildTeSSLa: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
-
-      unless @viewManager.activeProject.tesslaFiles?
-        @viewManager.showNoCompilableTeSSLaFilesNotification()
-        return
-
-      @viewManager.showTooMuchCompilableTeSSLaFilesNotification() if @viewManager.activeProject.tesslaFiles.length > 1
-
-      fileActiveProject = @viewManager.activeProject.tesslaFiles[0]
-
-      @viewManager.disableButtons()
-      @viewManager.enableStopButton()
-
-      args = [
-        "exec", "tessla", "java", "-jar", "/tessla-imdea-snapshot.jar",
-        path.relative @viewManager.activeProject.projPath, fileActiveProject .replace /\\/g, "/",
-      ]
-
-      @checkDockerContainer()
-      @runningProcess = childProcess.spawn "docker", args
-
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
-
-      outputs = []
-      @runningProcess.stdout.on "data", (data) => outputs.push data.toString()
-
-      errors = []
-      @runningProcess.stderr.on "data", (data) => errors.push data.toString()
-
-      @runningProcess.on "close", () =>
-        @runningProcess = null
-
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        stdout = outputs.join()
-        stderr = errors.join()
-
-        if stdout.charAt 0 is "{"
-          stdout = "#{stdout.slice 0, -2}\n" if stdout.charAt(stdout.length - 2) is ","
-
-          fs.writeFileSync path.join(@containerBuild, "instrumented_#{@viewManager.activeProject.binName}.tessla.json"), stdout
-
-          @viewManager.views.logView.addEntry ["message", "Successfully compiled #{path.relative(@viewManager.activeProject.projPath, fileActiveProject).replace(/\\/g, "/")}"]
-          @viewManager.removeTeSSLaSourceMarkers()
-
-          atom.notifications.addSuccess "Successfully compiled TeSSLa file"
-
-          successCallback.call @
-
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling #{fileActiveProject}"]
-          @viewManager.views.errorsTeSSLaViews.addEntry [stderr + stdout]
-
-          atom.notifications.addError "Errors while compiling TeSSLa file",
-            detail: stderr + stdout
-
-          errorCallback.call @,
-            error: stderr + stdout
-            file: fileActiveProject
-
-
-    onBuildAssembly: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
-
-      @viewManager.disableButtons()
-      @viewManager.enableStopButton()
-
-      args = [
-        "exec", "tessla", "clang++", path.join("build", "instrumented_#{@viewManager.activeProject.binName}.bc"),
-        "-o", "build/instrumented_#{@viewManager.activeProject.binName}", "-lzlog", "-lpthread",
-        "-L/usr/local/lib", "-L/InstrumentFunctions", "-lLogger",
-      ]
-
-      @checkDockerContainer()
-      @runningProcess = childProcess.spawn "docker", args
-
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
-
-      errors = []
-      @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry [data.toString()]
-        errors.push data.toString()
-
-      @runningProcess.on "close", () =>
-        @runningProcess = null
-
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        if errors.length is 0
-          @viewManager.views.logView.addEntry ["message", "Successfully compiled Assembly"]
-          atom.notifications.addSuccess "Successfully compiled Assembly"
-          successCallback.call @
-
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling Assembly"]
-          atom.notifications.addError "Errors while compiling Assembly",
-            detail: errors.join ""
-          errorCallback.call @
+      @onDoRV
+        onSuccess: (lines) -> @viewManager.views.formattedOutputView.update lines
+        onError: (errs) -> console.log errs
 
 
     onBuildCCode: ({ buildAssembly, onSuccess, onError }) ->
@@ -285,52 +122,6 @@ module.exports=
           errorCallback.call @
 
 
-    onRunPatchedBinary: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
-
-      @viewManager.disableButtons()
-      @viewManager.enableStopButton()
-
-      traceFile = path.join @containerDir, "instrumented_#{@viewManager.activeProject.binName}.trace"
-      fs.renameSync traceFile, "#{traceFile}.#{+new Date}" if fs.existsSync traceFile
-
-      args = ["exec", "tessla", "./build/instrumented_#{@viewManager.activeProject.binName}"]
-
-      @checkDockerContainer()
-      @runningProcess = childProcess.spawn "docker", args
-
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
-
-      outputs = []
-      @runningProcess.stdout.on "data", (data) =>
-        @viewManager.views.consoleView.addEntry [data.toString()]
-        outputs.push data.toString()
-
-      errors = []
-      @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry [data.toString()]
-        errors.push data.toString()
-
-      @runningProcess.on 'close', (code, signal) =>
-        @runningProcess = null
-
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
-        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
-
-        if errors.length is 0
-          successCallback.call @
-
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while running the patched binary"]
-          atom.notifications.addError('Errors while running the patched binary', { detail: errors.join('') });
-          errorCallback.call @
-
-
     onRunBinary: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -383,40 +174,38 @@ module.exports=
           errorCallback.call @
 
 
-    onRunTeSSLa: ({ onSuccess, onError }) ->
+    onDoRV: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
 
-      unless @viewManager.activeProject.projPath?
+      if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
         return
 
-      tsslJSON = path.join @containerBuild, "instrumented_#{@viewManager.activeProject.binName}.tessla.json"
-      unless fs.existsSync tsslJSON
-        @viewManager.showNoTeSSLaJSONFoundNotification()
+      unless @viewManager.activeProject.cFiles?
+        @viewManager.showNoCompilableCFilesNotification()
         return
 
-      JSONString = fs.readFileSync(tsslJSON).toString()
-      tsslJSONContent = JSON.parse(JSONString).items
+      unless @viewManager.activeProject.tesslaFiles?
+        @viewManager.showNoCompilableTeSSLaFilesNotification()
+        return
 
-      outputArgs = [
-        "LANG=C.UTF-8", "/tessla_server", path.relative @containerDir, tsslJSON .replace /\\/g, "/"
-        "--trace", "instrumented_#{@viewManager.activeProject.binName}.trace"
-      ]
-
-      for key, stream of tsslJSONContent
-        if stream.out? and stream.name?
-          outputArgs.push "-o"
-          outputArgs.push "#{stream.id}:#{stream.name}"
+      if @runningProcess?
+        @viewManager.showCurrentlyRunningProcessNotification()
+        return
 
       @viewManager.disableButtons()
       @viewManager.enableStopButton()
 
-      args = ["exec", "tessla", "sh", "-c", "'#{outputArgs.join " "}'"];
+      @transferFilesToContainer()
+
+      cFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.cFiles[0]
+      tsslFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.tesslaFiles[0]
+
+      args = ["exec", "tessla", "tessla_rv", "#{cFile}", "#{tsslFile}"]
 
       @checkDockerContainer()
-      @runningProcess = childProcess.spawn "docker", args,
-        shell: yes
+      @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
       @viewManager.views.logView.addEntry ["Docker", command]
@@ -431,20 +220,21 @@ module.exports=
         @viewManager.views.errorsTeSSLaViews.addEntry [data.toString()]
         errors.push data.toString()
 
-      @runningProcess.on 'close', (code, signal) =>
+      @runningProcess.on "close", () =>
         @runningProcess = null
+
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
-        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
-
         if errors.length is 0
-          successCallback.call @, outputs
+          # @viewManager.views.logView.addEntry ["message", "Successfully compiled C files"]
+          # atom.notifications.addSuccess "Successfully compiled C files"
+          console.log outputs
+          successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while running the TeSSLa server"]
-          atom.notifications.addError "Errors while running TeSSLa server",
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling project files"]
+          atom.notifications.addError "Errors while compiling project files",
             detail: errors.join ""
           errorCallback.call @
 
@@ -468,10 +258,10 @@ module.exports=
 
     transferFilesToContainer: ->
       fs.emptyDirSync @containerDir
-      @viewManager.views.logView.addEntry ["command", "rm -rf ${this.containerDir}/*"]
+      @viewManager.views.logView.addEntry ["command", "rm -rf #{@containerDir}/*"]
 
       fs.mkdirSync path.join @containerDir, "build"
-      @viewManager.views.logView.addEntry ["command", "mkdir ${this.containerBuild}"]
+      @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
 
       @createZLogFile()
       @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=build,.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]

@@ -1,11 +1,11 @@
-request = require 'request'
-progress = require 'request-progress'
-fs = require 'fs'
-path = require 'path'
-os = require 'os'
-DecompressZip = require 'decompress-zip'
-childProcess = require 'child_process'
-onFinished = require 'on-finished'
+request = require "request"
+progress = require "request-progress"
+fs = require "fs"
+path = require "path"
+os = require "os"
+DecompressZip = require "decompress-zip"
+childProcess = require "child_process"
+onFinished = require "on-finished"
 
 module.exports=
   class Downloader
@@ -22,11 +22,11 @@ module.exports=
       startButton.innerHTML = "Download"
       startButton.classList.add "btn", "btn-info"
       startButton.addEventListener "click", ->
-        fs.stat path.dirname(filePath), (err, stats) =>
-          if err?.code is 'ENOENT'
-            fs.mkdir path.dirname(filePath), =>
+        fs.stat path.dirname(filePath), (err, stats) ->
+          if err?.code is "ENOENT"
+            fs.mkdir path.dirname(filePath), ->
               notification.dismiss()
-              @downloadAndLoad { url, filePath, callback }
+              Downloader.downloadAndSetup { url, filePath, callback }
 
       stopButton = document.createElement "a"
       stopButton.innerHTML = "No thanks"
@@ -40,9 +40,33 @@ module.exports=
       # get the notification to include missing stuff
       try
         notificationView = atom.views.getView notification
-        notificationContent = notificationView.element.querySelector '.detail-content'
+        notificationContent = notificationView.element.querySelector ".detail-content"
         notificationContent?.appendChild btnWrapper
       catch _
+
+
+    @formatTime: (seconds) ->
+      format = {}
+      remainder = seconds
+
+      if remainder > 60
+        format.seconds = remainder %% 60
+        format.minutes = Math.floor remainder / 60
+        remainder = format.minutes
+
+        if remainder > 60
+          format.minutes = remainder %% 60
+          format.hours = Math.floor remainder / 60
+          remainder = format.hours
+
+          if remainder > 24
+            format.hours = remainder %% 24
+            format.days = Math.floor remainder / 24
+
+      else
+        format.seconds = seconds
+
+      format
 
 
     @downloadAndSetup: ({ url, filePath, callback }) ->
@@ -54,13 +78,13 @@ module.exports=
       progressWrapper.classList.add "block"
 
       progressBar = document.createElement "progress"
-      progressBar.classList.add "inline-block"
+      progressBar.classList.add "block", "full-width-progress"
       progressBar.max = "100"
       progressBar.value = "0"
 
       progressTime = document.createElement "span"
-      progressTime.classList.add "inline-block"
-      progressTime.innerHTML = 'At 0%'
+      progressTime.classList.add "block"
+      progressTime.innerHTML = "At 0%"
 
       progressWrapper.appendChild progressBar
       progressWrapper.appendChild progressTime
@@ -70,7 +94,7 @@ module.exports=
 
       abortBtn = document.createElement "a"
       abortBtn.classList.add "btn", "btn-info"
-      abortBtn.innerHTML = 'Cancel'
+      abortBtn.innerHTML = "Cancel"
 
       abortWrapper.appendChild abortBtn
 
@@ -83,13 +107,19 @@ module.exports=
       catch _
 
       req = null
-      progress(req = request url).on "progress", (state) =>
-        progressBar.value = "$#{Math.round(state.percent * 100)}"
-        progressTime.innerHTML = "Download at #{Math.round(state.percent * 100)}%, remaining time: #{Math.round(state.time.remaining)}s"
-      .on 'end', () =>
+      progress(req = request url).on "progress", (state) ->
+        formattedTime = Downloader.formatTime Math.round state.time.remaining
+
+        progressBar.value = "#{Math.round(state.percent * 100)}"
+        progressTime.innerHTML  = "Download at #{Math.round(state.percent * 100)}%, remaining time: "
+        progressTime.innerHTML += "#{formattedTime.days}d " if formattedTime.days?
+        progressTime.innerHTML += "#{formattedTime.hours}h " if formattedTime.hours?
+        progressTime.innerHTML += "#{formattedTime.minutes}m " if formattedTime.minutes?
+        progressTime.innerHTML += "#{formattedTime.seconds}s " if formattedTime.seconds?
+      .on "end", ->
         progressNotification.dismiss()
 
-        onFinished req, (err, res) =>
+        onFinished req, (err, res) ->
           return if res?._aborted or err?
 
           unzipNotification = atom.notifications.addInfo "Unzip and Load #{path.basename(url)}",
@@ -98,7 +128,11 @@ module.exports=
 
           indeterminateProgressWrapper = document.createElement "div"
           indeterminateProgressWrapper.classList.add "block"
-          indeterminateProgressWrapper.appendChild document.createElement "progress"
+
+          indeterminateProgress = document.createElement "progress"
+          indeterminateProgress.classList.add "block", "full-width-progress"
+
+          indeterminateProgressWrapper.appendChild indeterminateProgress
 
           try
             unzipNotificationView = atom.views.getView unzipNotification
@@ -106,27 +140,25 @@ module.exports=
             unzipNotificationContent?.appendChild indeterminateProgressWrapper
           catch _
 
-          atom.config.set('tessla2.alreadySetUpDockerContainer', true);
+          atom.config.set "tessla2.alreadySetUpDockerContainer", yes
 
           unzipper = new DecompressZip filePath
-          unzipper.on "error", err =>
+          unzipper.on "error", (err) ->
             unzipNotification.dismiss();
 
-          unzipper.on "extract", log =>
-            childProcess.spawn("docker", ["rmi", "tessla"]).on "close", =>
-              load = childProcess.spawn "docker", ["load", "-i", path.join path.dirname(filePath), 'tessla']
-
-              load.on "close", =>
+          unzipper.on "extract", (log) ->
+            childProcess.spawn("docker", ["rmi", "tessla"]).on "close", ->
+              childProcess.spawn("docker", ["load", "-i", path.join path.dirname(filePath), "tessla2-docker"]).on "close", ->
                 dockerArgs = ["run", "--volume", "#{path.join os.homedir(), ".tessla-env"}:/tessla", "-w", "/tessla", "-tid", "--name", "tessla", "tessla", "sh"]
                 childProcess.spawn "docker", dockerArgs
                 unzipNotification.dismiss()
 
           unzipper.extract
             path: path.dirname filePath
-            filter: (file) => return yes
+            filter: (file) -> yes
 
         callback()
       .pipe fs.createWriteStream filePath
 
-      abortBtn.addEventListener "click", =>
+      abortBtn.addEventListener "click", ->
         req.abort()
