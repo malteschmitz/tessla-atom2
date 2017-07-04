@@ -15,9 +15,10 @@ Downloader = require "./downloader"
 module.exports=
   subscriptions: null
   activeProject: null
-  viewManager: new ViewManager @activeProject
+  viewManager: new ViewManager
   toolBarButtons: {}
   messageQueue: []
+  flexiblePanelsManager: null
 
   activate: ->
     containerDir = path.join os.homedir(), ".tessla-env"
@@ -86,6 +87,7 @@ module.exports=
 
   deactivate: ->
     @subscriptions.dispose()
+    @flexiblePanelsManager.destroy()
     console.log "docker rm -f tessla"
     childProcess.spawnSync "docker", ["rm", "-f", "tessla"]
 
@@ -112,7 +114,7 @@ module.exports=
 
       @viewManager.connectViews viewsContainer
 
-  consumeFlexiblePanels: (flexiblePanelsManager) ->
+  consumeFlexiblePanels: (@flexiblePanelsManager) ->
     logCols = [
         name: "Type", align: "center", fixedWidth: 70, type: "label"
       ,
@@ -138,28 +140,28 @@ module.exports=
     ]
 
     Promise.all([
-      flexiblePanelsManager.createFlexiblePanel
+      @flexiblePanelsManager.createFlexiblePanel
         title: "Console"
-        columns: cols
+        columns: [name: "Description"]
         useMonospaceFont: yes
         hideTableHead: yes
         hideCellBorders: yes
-      flexiblePanelsManager.createFlexiblePanel
+      @flexiblePanelsManager.createFlexiblePanel
         title: "Errors (C)"
         columns: cols
         useMonospaceFont: yes
         hideTableHead: yes
-      flexiblePanelsManager.createFlexiblePanel
+      @flexiblePanelsManager.createFlexiblePanel
         title: "Errors (TeSSLa)"
         columns: cols
         useMonospaceFont: yes
         hideTableHead: yes
-      flexiblePanelsManager.createFlexiblePanel
+      @flexiblePanelsManager.createFlexiblePanel
         title: "Warnings"
         columns: cols
         useMonospaceFont: yes
         hideTableHead: yes
-      flexiblePanelsManager.createFlexiblePanel
+      @flexiblePanelsManager.createFlexiblePanel
         title: "Log"
         columns: logCols
         labels: logLbls
@@ -181,9 +183,7 @@ module.exports=
       @viewManager.addIconsToTabs()
       @viewManager.setUpSplitView()
 
-      @messageQueue.forEach (element) ->
-        viewsContainer.logView.addEntry [element.type, element.msg]
-
+      @messageQueue.forEach (element) -> viewsContainer.logView.addEntry [element.type, element.msg]
       @messageQueue = []
 
   consumeToolBar: (getToolBar) ->

@@ -10,6 +10,7 @@ module.exports=
       dotfiles: no
       modules: no
 
+
     constructor: (@projPath) ->
       @outputDir = ""
       @binName = ""
@@ -24,6 +25,7 @@ module.exports=
       cFiles = @getCFiles()
       tesslaFiles = @getTeSSLaFiles()
 
+
     setProjPath: (projPath) ->
       @projPath = projPath
       @updateOutputDir()
@@ -32,21 +34,26 @@ module.exports=
       @cFiles = @getCFiles()
       @tesslaFiles = @getTeSSLaFiles()
 
+
     updateOutputDir: ->
       @outputDir = path.join @projPath, "build"
 
+
     updateBinName: ->
       @binName = path.basename(@projPath).replace " ", "_"
+
 
     getCFiles: ->
       files = scanFolder @projPath, ".c", yes, @sfConfig
       files = null if files.length is 0
       files
 
+
     getTeSSLaFiles: ->
       files = scanFolder @projPath, ".tessla", yes, @sfConfig
       files = null if files.length is 0
       files
+
 
     setUpProjectStructure: ->
       unless fileSystem.existsSync path.join @projPath, ".gcc-flags.json"
@@ -68,6 +75,7 @@ module.exports=
             fileContent += "}"
 
             fileSystem.writeFileSync path.join @projPath, ".gcc-flags.json", fileContent
+
 
     clear: ->
       @projPath = ""

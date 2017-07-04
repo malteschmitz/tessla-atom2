@@ -4,7 +4,6 @@ fs = require "fs-extra"
 os = require "os"
 
 FileManager = require "./file-manager"
-{ MESSAGE_TYPE } = require "./constants"
 
 module.exports=
   class Controller
