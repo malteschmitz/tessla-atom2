@@ -69,7 +69,7 @@ module.exports=
       "tessla2:set-up-split-view": => @viewManager.setUpSplitView()
       "tessla2:build-and-run-c-code": => controller.onCompileAndRunCCode()
       "tessla2:build-c-code": => controller.onBuildCCode buildAssembly: no
-      "tessla2:run-c-code": => controller.onRunBinary()
+      "tessla2:run-c-code": => controller.onRunBinary {}
       "tessla2:stop-current-process": => controller.onStopRunningProcess()
       "tessla2:build-and-run-project": => controller.onCompileAndRunProject()
       "tessla2:reset-view": => @viewManager.restoreViews()
@@ -81,7 +81,7 @@ module.exports=
 
     @subscriptions.add new Disposable ->
       atom.workspace.getPaneItems().forEach (item) ->
-        if item instanceof MessageView or item instanceof LogView or item instanceof SidebarView or item instanceof OutputView
+        if item instanceof SidebarView or item instanceof OutputView
           item.destroy()
 
   deactivate: ->
@@ -114,7 +114,7 @@ module.exports=
 
   consumeFlexiblePanels: (flexiblePanelsManager) ->
     logCols = [
-        name: "Type", align: "center", fixedWidth: 65, type: "label"
+        name: "Type", align: "center", fixedWidth: 70, type: "label"
       ,
         name: "Description", indentWrappedText: yes
       ,
@@ -128,11 +128,13 @@ module.exports=
     ]
 
     logLbls = [
-        type: "command", background: "#F75D59", color: "#fff"
+        type: "command", background: "#F75D59", color: "#FFF"
       ,
-        type: "message", background: "#3090C7", color: "#fff"
+        type: "message", background: "#3090C7", color: "#FFF"
       ,
-        type: "Docker", background: "#8E5287", color: "#fff"
+        type: "Docker", background: "#8E5287", color: "#FFF"
+      ,
+        type: "TeSSLa RV", background: "#5BB336", color: "#FFF"
     ]
 
     Promise.all([
@@ -141,6 +143,7 @@ module.exports=
         columns: cols
         useMonospaceFont: yes
         hideTableHead: yes
+        hideCellBorders: yes
       flexiblePanelsManager.createFlexiblePanel
         title: "Errors (C)"
         columns: cols
@@ -169,7 +172,7 @@ module.exports=
         switch view?.getTitle()
           when "Console" then viewsContainer.consoleView = view
           when "Errors (C)" then viewsContainer.errorsCView = view
-          when "Errors (TeSSLa)" then viewsContainer.errorsTeSSLaViews = view
+          when "Errors (TeSSLa)" then viewsContainer.errorsTeSSLaView = view
           when "Warnings" then viewsContainer.warningsView = view
           when "Log" then viewsContainer.logView = view
           else viewsContainer.unknown.push view

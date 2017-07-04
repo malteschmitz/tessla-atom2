@@ -1,5 +1,5 @@
-path = require 'path'
-fs = require 'fs'
+path = require "path"
+fs = require "fs"
 
 module.exports=
   class FileManager
@@ -9,9 +9,9 @@ module.exports=
       names = []
 
       fileExtension = path.extname sourceFile
-      fileLines = fs.readFileSync(sourceFile).toString().split '\n'
+      fileLines = fs.readFileSync(sourceFile).toString().split "\n"
 
-      if fileExtension is '.c'
+      if fileExtension is ".c"
         regex = ///
           (?:[a-zA-Z][_\w]*)        # ungrouped match that starts with a letter - This is the return type of the function
           (?:\s*[*]?\s+|\s+[*]\s*)  # optional an asterics for a pointer can follow
@@ -41,23 +41,23 @@ module.exports=
         for key, funcs of namesAssoc
           names.push funcs
 
-      else if fileExtension is '.tessla'
+      else if fileExtension is ".tessla"
         fileLines.forEach (line) ->
-          idxFnCall = line.indexOf 'function_calls("'
-          idxComment = line.indexOf '--'
+          idxFnCall = line.indexOf "function_calls(\""
+          idxComment = line.indexOf "--"
 
           onlyFunctionCall = idxFnCall isnt -1 and idxComment is -1;
           functionCallBeforeComment = idxFnCall isnt -1 and idxComment isnt -1 and idxFnCall < idxComment
 
           if onlyFunctionCall or functionCallBeforeComment
-            functionName = line.substr idxFnCall + 'function_calls("'.length
-            functionName = functionName.substr 0, functionName.indexOf '"'
+            functionName = line.substr idxFnCall + "function_calls(\"".length
+            functionName = functionName.substr 0, functionName.indexOf "\""
 
             namesAssoc.functionName =
-              fileName: ''
+              fileName: ""
               functionName: functionName
-              line: ''
-              column: ''
+              line: ""
+              column: ""
 
         for key, funcs of namesAssoc
           names.push funcs

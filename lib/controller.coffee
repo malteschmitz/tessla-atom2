@@ -45,8 +45,7 @@ module.exports=
 
       @viewManager.saveEditors()
       @onBuildCCode
-        buildAssembly: no
-        onSuccess: -> @onRunBinary
+        onSuccess: -> @onRunBinary {}
 
 
     onCompileAndRunProject: ->
@@ -64,8 +63,7 @@ module.exports=
         onError: (errs) -> console.log errs
 
 
-    onBuildCCode: ({ buildAssembly, onSuccess, onError }) ->
-      assemblyFlag = buildAssembly ? no
+    onBuildCCode: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
 
@@ -86,10 +84,9 @@ module.exports=
 
       @transferFilesToContainer()
 
-      outFile = path.join "build", (@viewManager.activeProject.binName + if assemblyFlag then ".bc" else "")
-      args = ["exec", "tessla", "clang", "-o", outFile]
-      args = args.concat ['-emit-llvm', '-S'] if assemblyFlag
+      outFile = path.join "build", @viewManager.activeProject.binName
 
+      args = ["exec", "tessla", "clang", "-o", outFile]
       args = args.concat @viewManager.activeProject.cFiles.map (arg) =>
         path.relative @viewManager.activeProject.projPath, arg .replace /\\/g, "/"
 
@@ -111,12 +108,12 @@ module.exports=
         @viewManager.disableStopButton()
 
         if errors.length is 0
-          @viewManager.views.logView.addEntry ["message", "Successfully compiled C files"]
+          @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources."]
           atom.notifications.addSuccess "Successfully compiled C files"
           successCallback.call @
 
         else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling C files"]
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling C sources."]
           atom.notifications.addError "Errors while compiling C files",
             detail: errors.join ""
           errorCallback.call @
@@ -161,8 +158,8 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}" if code?]
-        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}" if signal?]
+        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}."]  if code?
+        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}."]  if signal?
 
         if errors.length is 0
           successCallback.call @
@@ -212,25 +209,32 @@ module.exports=
 
       outputs = []
       @runningProcess.stdout.on "data", (data) =>
-        @viewManager.views.consoleView.addEntry [data.toString()]
-        outputs.push data.toString()
+        line = data.toString()
+        if line.substr(0, 11) is "[TeSSLa RV]"
+          @viewManager.views.logView.addEntry ["TeSSLa RV", line.substr(11).trim()]
+        else
+          outputs.push line
+          @viewManager.views.consoleView.addEntry [line]
+
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsTeSSLaViews.addEntry [data.toString()]
+        @viewManager.views.errorsTeSSLaView.addEntry [data.toString()]
         errors.push data.toString()
 
-      @runningProcess.on "close", () =>
+      @runningProcess.on "close", (code, signal) =>
         @runningProcess = null
 
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
+        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}."]  if code?
+        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}."]  if signal?
+
         if errors.length is 0
-          # @viewManager.views.logView.addEntry ["message", "Successfully compiled C files"]
-          # atom.notifications.addSuccess "Successfully compiled C files"
-          console.log outputs
-          successCallback.call @
+          # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]
+          # atom.notifications.addSuccess "Successfully compiled C sources"
+          successCallback.call @, outputs
 
         else
           @viewManager.views.logView.addEntry ["message", "An error occurred while compiling project files"]

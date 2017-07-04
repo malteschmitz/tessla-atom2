@@ -184,30 +184,29 @@
   text-indent: -15px;
 }
 
-.tab[data-type=LogView] > div.title::before,
-.tab[data-type=MessageView] > div.title::before {
-  padding-right: 5px;
+.tab[data-type=FlexiblePanelView] > div.title::before {
+  padding-right: 3px;
   font: normal normal normal @fa-font-size-base/@fa-line-height-base FontAwesome;
 }
 
 .tab.logViewTab > div.title::before {
-  content: "\f017";
+  content: @fa-var-clock-o;
 }
 
 .tab.warningsTab > div.title::before {
-  content: "\f071";
+  content: @fa-var-exclamation-triangle;
 }
 
 .tab.errorsTeSSLaTab > div.title::before {
-  content: "\f06a";
+  content: @fa-var-exclamation-circle;
 }
 
 .tab.errorsCTab > div.title::before {
-  content: "\f06a";
+  content: @fa-var-exclamation-circle;
 }
 
 .tab.consoleTab > div.title::before {
-  content: "\f120";
+  content: @fa-var-terminal;
 }
 
 .full-width-progress {
