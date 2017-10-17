@@ -157,8 +157,8 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}."]  if code?
-        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}."]  if signal?
+        @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
+        @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
 
         if errors.length is 0
           successCallback.call @
@@ -227,8 +227,8 @@ module.exports=
         @viewManager.enableButtons()
         @viewManager.disableStopButton()
 
-        @viewManager.views.consoleView.addEntry ["Process exited with code #{code}."]  if code?
-        @viewManager.views.consoleView.addEntry ["Process was killed due to signal #{signal}."]  if signal?
+        @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
+        @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
 
         if errors.length is 0
           # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]

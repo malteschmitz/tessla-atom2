@@ -11,7 +11,7 @@
   },
   {
     'comment': 'Library functions'
-    'match': '\\b(signalAbs|eventAbs|add|and|div|eq|geq|gt|implies|leq|lt|max|min|mul|neg|signalNot|eventNot|or|sub|instruction_executions|function_calls|function_returns|variable_values|merge|filter|ifThen|ifThenElse|changeOf|sample|occursAll|occursAny|signalMaximum|signalMinimum|eventMaximum|eventMinimum|sum|eventCount|mrv|sma|timestamps|delaySignalByTime|delayEventByCount|delayEventByTime|inPast|literal)\\b'
+    'match': '\\b(code_line_exec|signalAbs|eventAbs|add|and|div|eq|geq|gt|implies|leq|lt|max|min|mul|neg|signalNot|eventNot|or|sub|instruction_executions|function_calls|function_returns|variable_values|merge|filter|ifThen|ifThenElse|changeOf|sample|occursAll|occursAny|signalMaximum|signalMinimum|eventMaximum|eventMinimum|sum|eventCount|mrv|sma|timestamps|delaySignalByTime|delayEventByCount|delayEventByTime|inPast|literal)\\b'
     'name': 'support.function'
   },
   {
@@ -38,7 +38,7 @@
   },
   {
     'comment': 'Variable names'
-    'match': '(define)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\:)'
+    'match': '(define|def)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\:)'
     'captures':
       1:
         'name': 'keyword.other'
