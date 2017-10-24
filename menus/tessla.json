@@ -5,7 +5,7 @@
         "type": "separator"
       },
       {
-        "label": "Toggle TeSSLa",
+        "label": "Toggle TeSSLa2",
         "command": "tessla2:toggle"
       },
       {
@@ -24,7 +24,7 @@
       "label": "Packages",
       "submenu": [
         {
-          "label": "TeSSLa",
+          "label": "TeSSLa2",
           "submenu": [
             {
               "label": "Toggle",
