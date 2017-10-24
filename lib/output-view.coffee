@@ -108,7 +108,7 @@ module.exports=
 
 
     update: (output) ->
-      console.log(output);
+      # console.log(output);
 
       regex = /(.+)@(.+):(.+)/g
       formatted = {}

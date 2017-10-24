@@ -250,12 +250,17 @@ module.exports=
 
     checkDockerContainer: ->
       if childProcess.execSync("docker ps -q -f name=tessla").toString() is ""
+
         args = [
           "run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid",
           "--name", "tessla", "tessla", "sh"
         ]
 
-        childProcess.spawnSync 'docker', args
+        # make sure the actual container ist not still alive and remove it forcefully
+        childProcess.spawnSync "docker", ["rm", "-f", "tessla"]
+
+        # after that you can start a new one
+        childProcess.spawnSync "docker", args
         @viewManager.views.logView.addEntry ["Docker", "docker #{args.join " "}"]
 
 
