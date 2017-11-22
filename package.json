@@ -19,6 +19,7 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "decompress-zip": "^0.3.0",
+    "dockerode": "^2.5.3",
     "fs": "0.0.1-security",
     "fs-extra": "^3.0.1",
     "on-finished": "^2.3.0",

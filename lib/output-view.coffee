@@ -72,15 +72,15 @@ module.exports=
       treeView.appendChild placeholder
 
 
-    onExpand: ->
+    onExpand: =>
       list = @element.getElementsByClassName("list-tree")[0];
       listItems = list.children
 
       for item in listItems
-        if item.classList.contains "list-nested-item" and item.classList.contains "collapsed"
+        if item.classList.contains("list-nested-item") and item.classList.contains("collapsed")
           item.classList.remove "collapsed"
 
-    onCollapse: ->
+    onCollapse: =>
       list = @element.getElementsByClassName("list-tree")[0];
       listItems = list.children
 
@@ -109,34 +109,39 @@ module.exports=
 
     update: (output) ->
       # console.log(output);
+      # regex = /(.+)@(.+):(.+)/g
+      regex = /(\d+)\s*:\s*([\w\d]*)\s*=\s*(?:\((.*)\)|([-+"\w\d]+))/g
 
-      regex = /(.+)@(.+):(.+)/g
       formatted = {}
 
       output.forEach (line) ->
         while (match = regex.exec line)?
           if match?
-
             dateString = ""
-            if parseFloat(match[2]) is 0
+            if parseFloat(match[1]) is 0
               dateString = "initially";
             else
-              date = new Date parseFloat(match[2]) * 1000
+              date = new Date parseFloat(match[1])
               hours = if date.getHours() < 10 then "0#{date.getHours()}" else date.getHours()
               minutes = if date.getMinutes() < 10 then "0#{date.getMinutes()}" else date.getMinutes()
               seconds = if date.getSeconds() < 10 then "0#{date.getSeconds()}" else date.getSeconds()
               dateString = "#{hours}:#{minutes}:#{seconds}.#{date.getMilliseconds()}"
 
-            if match[1] of formatted
-              formatted[match[1]].push
-                time: parseFloat(match[2])
+            text = ""
+            text = "#{match[3]}#{text}" if match[3]?
+            text = "#{match[4]}#{text}" if match[4]?
+            text = "\"\"" if text is ""
+
+            if match[2] of formatted
+              formatted[match[2]].push
+                time: parseFloat(match[1])
                 formattedTime: dateString
-                value: match[3]
+                value: text
             else
-              formatted[match[1]] = [
-                time: parseFloat(match[2])
+              formatted[match[2]] = [
+                time: parseFloat(match[1])
                 formattedTime: dateString
-                value: match[3]
+                value: text
               ]
 
       @clearEntries()
@@ -144,3 +149,5 @@ module.exports=
       for key, value of formatted
         value.sort (a, b) -> a.time - b.time
         @addEntry key, value
+
+      console.log formatted

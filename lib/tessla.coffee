@@ -10,7 +10,7 @@ OutputView = require "./output-view"
 Controller = require "./controller"
 ViewManager = require "./view-manager"
 Downloader = require "./downloader"
-{SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW} = require "./constants"
+{SIDEBAR_VIEW, FORMATTED_OUTPUT_VIEW, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME, TESSLA_REGISTRY} = require "./constants"
 
 module.exports=
   subscriptions: null
@@ -20,46 +20,26 @@ module.exports=
   messageQueue: []
   flexiblePanelsManager: null
 
-  activate: ->
-    containerDir = path.join os.homedir(), ".tessla-env"
-    imageDir = path.join path.dirname(__dirname), "docker-image"
+  containerDir: ""
 
-    unless atom.config.get("tessla2.alreadySetUpDockerContainer") is yes
-      Downloader.download
-        url: "http://rv.isp.uni-luebeck.de/tessla/tessla2-docker.zip"
-        filePath: path.join imageDir, "tessla-docker.zip"
-        callback: ->
+  activate: ->
+    @containerDir = path.join os.homedir(), ".tessla-env"
 
     packageDeps.install("tessla2").catch (error) ->
       notifications.addError "Could not start TeSSLa package",
         detail: "Package dependencies could not be installed. The package was not started because the TeSSLa package will not run properly without this dependencies.\n#{error.message}"
       return
 
-    # set up container directory
-    fs.stat containerDir, (err, stats) =>
-      if err?.code is "ENOENT"
-        fs.mkdir containerDir, =>
-          # create container directory
-          @messageQueue.push type: "command", msg: "mkdir #{containerDir}"
-
-          # create build directory in container directory
-          fs.mkdir path.join(containerDir, "build"), =>
-            @messageQueue.push type: "command", msg: "mkdir #{path.join containerDir, "build"}";
-
-            # start docker tessla container
-            dockerArgs = ["run", "--volume", "#{containerDir}:/tessla", "-w", "/tessla", "-tid", "--name", "tessla", "tessla", "sh"]
-            childProcess.spawn "docker", dockerArgs
-
-            # log command
-            @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
-
-      else
-        # if file exists just start docker
-        dockerArgs = ["run", "--volume", "#{containerDir}:/tessla", "-w", "/tessla", "-tid", "--name", "tessla", "tessla", "sh"];
-        childProcess.spawn "docker", dockerArgs
-
-        # log command
-        @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
+    unless atom.config.get("tessla2.alreadySetUpDockerContainer") is yes
+      @messageQueue.push { type: "Docker", msg: "docker pull #{TESSLA_REGISTRY}" }
+      Downloader.dockerDownload
+        callback: (output) =>
+          # log all messages from the docker pull request
+          @messageQueue = @messageQueue.concat messages for id, messages of output
+          # after processing all messages just flush them
+          @flushMessageQueue()
+          # start docker now
+          @startDocker()
 
     # create view manager
     @subscriptions = new CompositeDisposable
@@ -85,11 +65,42 @@ module.exports=
         if item instanceof SidebarView or item instanceof OutputView
           item.destroy()
 
+  startDocker: ->
+    # set up container directory
+    fs.stat @containerDir, (err, stats) =>
+      if err?.code is "ENOENT"
+        fs.mkdir @containerDir, =>
+          # create container directory
+          @messageQueue.push type: "command", msg: "mkdir #{@containerDir}"
+
+          # create build directory in container directory
+          fs.mkdir path.join(@containerDir, "build"), =>
+            @messageQueue.push type: "command", msg: "mkdir #{path.join @containerDir, "build"}";
+
+            # start docker tessla container
+            dockerArgs = ["run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid", "--name", TESSLA_CONTAINER_NAME, TESSLA_IMAGE_NAME, "sh"]
+            childProcess.spawn "docker", dockerArgs
+
+            # log command
+            @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
+
+      else
+        # if file exists just start docker
+        dockerArgs = ["run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid", "--name", TESSLA_CONTAINER_NAME, TESSLA_IMAGE_NAME, "sh"];
+        childProcess.spawn "docker", dockerArgs
+
+        # log command
+        @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
+
+      # flush whatever output is generated
+      @flushMessageQueue()
+
+
   deactivate: ->
     @subscriptions.dispose()
     @flexiblePanelsManager.destroy()
-    console.log "docker rm -f tessla"
-    childProcess.spawnSync "docker", ["rm", "-f", "tessla"]
+    console.log "docker rm -f #{TESSLA_CONTAINER_NAME}"
+    childProcess.spawnSync "docker", ["rm", "-f", TESSLA_CONTAINER_NAME]
 
   toggle: ->
     activeEditor = null
@@ -136,7 +147,9 @@ module.exports=
       ,
         type: "Docker", background: "#8E5287", color: "#FFF"
       ,
-        type: "TeSSLa RV", background: "#5BB336", color: "#FFF"
+        type: "TeSSLa RV", background: "#FF996E", color: "#FFF"
+      ,
+        type: "status", background: "#5BB336", color: "#FFF"
     ]
 
     Promise.all([
@@ -183,8 +196,9 @@ module.exports=
       @viewManager.addIconsToTabs()
       @viewManager.setUpSplitView()
 
-      @messageQueue.forEach (element) -> viewsContainer.logView.addEntry [element.type, element.msg]
-      @messageQueue = []
+      # @messageQueue.forEach (element) -> viewsContainer.logView.addEntry [element.type, element.msg]
+      # @messageQueue = []
+      @flushMessageQueue()
 
   consumeToolBar: (getToolBar) ->
     toolBar = getToolBar "tessla2"
@@ -269,3 +283,9 @@ module.exports=
       order: 4
       title: "Docker already set up?"
       description: "This flag is set to true if the docker container is already set up otherwise it will be set to false."
+
+  flushMessageQueue: ->
+    # if the view elements are set up then we can flush the queue to the console
+    if @viewManager.views?
+      @messageQueue.forEach (element) => @viewManager.views.logView.addEntry [element.type, element.msg]
+      @messageQueue = []

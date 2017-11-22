@@ -6,159 +6,129 @@ os = require "os"
 DecompressZip = require "decompress-zip"
 childProcess = require "child_process"
 onFinished = require "on-finished"
+Docker = require "dockerode"
+docker = new Docker
+
+{TESSLA_REGISTRY} = require "./constants"
 
 module.exports=
   class Downloader
 
-    @download: ({ url, filePath, callback }) ->
-      notification = atom.notifications.addInfo "Downloading TeSSLa Docker image",
-        detail: "The TeSSLa Docker image which is nessesary to compile and run TeSSLa specifications will be downloaded."
+    @dockerDownload: ({ callback }) ->
+      # show notification to user that a pull request will start that may take
+      # a few minutes if the latest version of tessla2 is not already downloaded
+      notification = atom.notifications.addInfo "Downloading/Updating TeSSLa2 Docker image",
+        detail: "The TeSSLa2 Docker image which is nessesary for TeSSLa2 will be updated or downloaded. This may take a few minutes of time, so please be patient."
         dismissable: yes
 
-      btnWrapper = document.createElement "div"
-      btnWrapper.classList.add "btn-toolbar"
+      downloadProgressWrapper = document.createElement "div"
+      downloadProgressWrapper.classList.add "block"
 
-      startButton = document.createElement "a"
-      startButton.innerHTML = "Download"
-      startButton.classList.add "btn", "btn-info"
-      startButton.addEventListener "click", ->
-        fs.stat path.dirname(filePath), (err, stats) ->
-          if err?.code is "ENOENT"
-            fs.mkdir path.dirname(filePath), ->
-              notification.dismiss()
-              Downloader.downloadAndSetup { url, filePath, callback }
+      downloadProgress = document.createElement "progress"
+      downloadProgress.classList.add "block", "full-width-progress"
 
-      stopButton = document.createElement "a"
-      stopButton.innerHTML = "No thanks"
-      stopButton.classList.add "btn", "btn-info"
-      stopButton.addEventListener "click", ->
-        notification.dismiss()
+      downloadProgressTime = document.createElement "span"
+      downloadProgressTime.classList.add "block"
+      downloadProgressTime.innerHTML = "Download: waiting"
 
-      btnWrapper.appendChild startButton
-      btnWrapper.appendChild stopButton
+      downloadProgressWrapper.appendChild downloadProgress
+      downloadProgressWrapper.appendChild downloadProgressTime
 
-      # get the notification to include missing stuff
+      extractingProgressWrapper = document.createElement "div"
+      extractingProgressWrapper.classList.add "block"
+
+      extractingProgress = document.createElement "progress"
+      extractingProgress.classList.add "block", "full-width-progress"
+
+      extractingProgressTime = document.createElement "span"
+      extractingProgressTime.classList.add "block"
+      extractingProgressTime.innerHTML = "Extraction: waiting"
+
+      extractingProgressWrapper.appendChild extractingProgress
+      extractingProgressWrapper.appendChild extractingProgressTime
+
       try
         notificationView = atom.views.getView notification
-        notificationContent = notificationView.element.querySelector ".detail-content"
-        notificationContent?.appendChild btnWrapper
+        notificationViewContent = notificationView.element.querySelector ".detail-content"
+        notificationViewContent?.appendChild downloadProgressWrapper
+        notificationViewContent?.appendChild extractingProgressWrapper
       catch _
 
+      # pull the latest version of tessla2 from the ISP repository
+      docker.pull TESSLA_REGISTRY, (err, stream) =>
+        messageChannelByID = {}
+        downloads = {}
+        extractions = {}
 
-    @formatTime: (seconds) ->
-      format = {}
-      remainder = seconds
+        onFinished = (err, output) =>
+          # console.log "Docker pull is completed"
+          notification.dismiss()
+          callback messageChannelByID
 
-      if remainder > 60
-        format.seconds = remainder %% 60
-        format.minutes = Math.floor remainder / 60
-        remainder = format.minutes
+        onProgress = (event) ->
+          # do not log progress stuff to console since this will be done via the
+          # notification
+          if event.status isnt "Downloading" and event.status isnt "Extracting"
+            if event.id?
+              messageChannelByID[event.id] = [] unless event.id of messageChannelByID
+              messageChannelByID[event.id].push { type: "Docker", msg: "#{event.id} #{event.status}" }
 
-        if remainder > 60
-          format.minutes = remainder %% 60
-          format.hours = Math.floor remainder / 60
-          remainder = format.hours
+            else
+              messageChannelByID.unidentified = [] unless "unidentified" of messageChannelByID
+              messageChannelByID.unidentified.push { type: "Docker", msg: "#{event.status}" }
 
-          if remainder > 24
-            format.hours = remainder %% 24
-            format.days = Math.floor remainder / 24
+          # in the other case we will take care of updating the progress information
+          else
+            if event.id? and event.progressDetail?
+              # store download progess
+              if event.status is "Downloading"
+                # store current information
+                downloads[event.id] =
+                  current: event.progressDetail.current
+                  total: event.progressDetail.total
 
-      else
-        format.seconds = seconds
+              #store extracting progress
+              if event.status is "Extracting"
+                # store current information
+                extractions[event.id] =
+                  current: event.progressDetail.current
+                  total: event.progressDetail.total
 
-      format
+          # now update the progress bar
+          valueDownloads = 0
+          valueExtractions = 0
+          maxDownloads = 1
+          maxExtractions = 1
+
+          for id, state of downloads
+            valueDownloads += state.current
+            maxDownloads += state.total
+
+          for id, state of extractions
+            valueExtractions += state.current
+            maxExtractions += state.total
+
+          downloadProgress.value = valueDownloads
+          extractingProgress.value = valueExtractions
+          downloadProgress.max = maxDownloads
+          extractingProgress.max = maxExtractions
+
+          downloadCurrentMB = parseFloat((Math.round(valueDownloads)/10000)/100).toFixed(2)
+          downloadMaxMB = parseFloat((Math.round(maxDownloads)/10000)/100).toFixed(2)
+          downloadPercentage = Math.round(valueDownloads/maxDownloads * 100)
+
+          extractingCurrentMB = parseFloat((Math.round(valueExtractions)/10000)/100).toFixed(2)
+          extractingMaxMB = parseFloat((Math.round(maxExtractions)/10000)/100).toFixed(2)
+          extractingPercentage = Math.round(valueExtractions/maxExtractions * 100)
+
+          downloadProgressTime.innerHTML = "Download: waiting"
+          downloadProgressTime.innerHTML = "Download: #{downloadCurrentMB}MB/#{downloadMaxMB}MB (#{downloadPercentage}%)" if downloadPercentage isnt 0
+          downloadProgressTime.innerHTML = "Download: complete" if downloadPercentage is 100
 
 
-    @downloadAndSetup: ({ url, filePath, callback }) ->
-      progressNotification = atom.notifications.addInfo "Download progress #{path.basename url}",
-        detail: "Download #{path.basename url} to #{path.dirname filePath}"
-        dismissable: yes
+          extractingProgressTime.innerHTML = "Extraction: waiting"
+          extractingProgressTime.innerHTML = "Extraction: #{extractingCurrentMB}MB/#{extractingMaxMB}MB (#{extractingPercentage}%)" if extractingPercentage isnt 0
+          extractingProgressTime.innerHTML = "Extraction: complete" if extractingPercentage is 100
 
-      progressWrapper = document.createElement "div"
-      progressWrapper.classList.add "block"
-
-      progressBar = document.createElement "progress"
-      progressBar.classList.add "block", "full-width-progress"
-      progressBar.max = "100"
-      progressBar.value = "0"
-
-      progressTime = document.createElement "span"
-      progressTime.classList.add "block"
-      progressTime.innerHTML = "At 0%"
-
-      progressWrapper.appendChild progressBar
-      progressWrapper.appendChild progressTime
-
-      abortWrapper = document.createElement "div"
-      abortWrapper.classList.add "btn-toolbar"
-
-      abortBtn = document.createElement "a"
-      abortBtn.classList.add "btn", "btn-info"
-      abortBtn.innerHTML = "Cancel"
-
-      abortWrapper.appendChild abortBtn
-
-      try
-        progressNotificationView = atom.views.getView progressNotification
-        progressNotificationContent = progressNotificationView.element.querySelector ".detail-content"
-        progressNotificationContent?.appendChild progressWrapper
-        progressNotificationContent?.appendChild abortWrapper
-
-      catch _
-
-      req = null
-      progress(req = request url).on "progress", (state) ->
-        formattedTime = Downloader.formatTime Math.round state.time.remaining
-
-        progressBar.value = "#{Math.round(state.percent * 100)}"
-        progressTime.innerHTML  = "Download at #{Math.round(state.percent * 100)}%, remaining time: "
-        progressTime.innerHTML += "#{formattedTime.days}d " if formattedTime.days?
-        progressTime.innerHTML += "#{formattedTime.hours}h " if formattedTime.hours?
-        progressTime.innerHTML += "#{formattedTime.minutes}m " if formattedTime.minutes?
-        progressTime.innerHTML += "#{formattedTime.seconds}s " if formattedTime.seconds?
-      .on "end", ->
-        progressNotification.dismiss()
-
-        onFinished req, (err, res) ->
-          return if res?._aborted or err?
-
-          unzipNotification = atom.notifications.addInfo "Unzip and Load #{path.basename(url)}",
-            detail: "Unzipping and loading tessla image. This process may take about 1-2 minutes."
-            dismissable: yes
-
-          indeterminateProgressWrapper = document.createElement "div"
-          indeterminateProgressWrapper.classList.add "block"
-
-          indeterminateProgress = document.createElement "progress"
-          indeterminateProgress.classList.add "block", "full-width-progress"
-
-          indeterminateProgressWrapper.appendChild indeterminateProgress
-
-          try
-            unzipNotificationView = atom.views.getView unzipNotification
-            unzipNotificationContent = unzipNotificationView.element.querySelector ".detail-content"
-            unzipNotificationContent?.appendChild indeterminateProgressWrapper
-          catch _
-
-          atom.config.set "tessla2.alreadySetUpDockerContainer", yes
-
-          unzipper = new DecompressZip filePath
-          unzipper.on "error", (err) ->
-            unzipNotification.dismiss();
-
-          unzipper.on "extract", (log) ->
-            childProcess.spawn("docker", ["rmi", "tessla"]).on "close", ->
-              childProcess.spawn("docker", ["load", "-i", path.join path.dirname(filePath), "tessla2-docker"]).on "close", ->
-                dockerArgs = ["run", "--volume", "#{path.join os.homedir(), ".tessla-env"}:/tessla", "-w", "/tessla", "-tid", "--name", "tessla", "tessla", "sh"]
-                childProcess.spawn "docker", dockerArgs
-                unzipNotification.dismiss()
-
-          unzipper.extract
-            path: path.dirname filePath
-            filter: (file) -> yes
-
-        callback()
-      .pipe fs.createWriteStream filePath
-
-      abortBtn.addEventListener "click", ->
-        req.abort()
+        # attach progress listener to pull request
+        docker.modem.followProgress stream, onFinished, onProgress

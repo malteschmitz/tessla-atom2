@@ -5,18 +5,28 @@
 ]
 'patterns': [
   {
+    'comment': 'In-line comments'
+    'match': '\-\-.*'
+    'name': 'comment.line.double-dash'
+  },
+  {
     'comment': 'Strings'
     'match': '"[^"]*"'
     'name': 'punctuation.string'
   },
   {
+    'comment': 'Keywords'
+    'match': '\\b(if|then|else)\\b'
+    'name': 'keyword.control'
+  },
+  {
     'comment': 'Library functions'
-    'match': '\\b(code_line_exec|signalAbs|eventAbs|add|and|div|eq|geq|gt|implies|leq|lt|max|min|mul|neg|signalNot|eventNot|or|sub|instruction_executions|function_calls|function_returns|variable_values|merge|filter|ifThen|ifThenElse|changeOf|sample|occursAll|occursAny|signalMaximum|signalMinimum|eventMaximum|eventMinimum|sum|eventCount|mrv|sma|timestamps|delaySignalByTime|delayEventByCount|delayEventByTime|inPast|literal)\\b'
+    'match': '\\b(code_line_exec|function_call|function_return)\\b'
     'name': 'support.function'
   },
   {
     'comment': 'Language constants'
-    'match': '\\b(true|false|True|False|TRUE|FALSE)\\b'
+    'match': '\\b(true|false)\\b'
     'name': 'constant.language'
   },
   {
@@ -37,8 +47,23 @@
     'name': 'keyword.operator.assignment'
   },
   {
+    'comment': 'Arithmetic operators'
+    'match': '\\s*(\\+|-|\\^|\\*|\\/|&|\\|<<|>>)\\s*'
+    'name': 'keyword.operator'
+  },
+  {
+    'comment': 'Comparison operator'
+    'match': '\\s*(<|>|!=|==|>=|<=|\\|\\||&&)\\s*'
+    'name': 'keyword.operator.comparison'
+  },
+  {
+    'comment': 'Comparison operator'
+    'match': '\\s*(!|~)\\s*'
+    'name': 'keyword.operator.unary'
+  },
+  {
     'comment': 'Variable names'
-    'match': '(define|def)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\:)'
+    'match': '(def|define)\\s+([\\w\\d\\_\\.]+)\\s*(?=\\:)'
     'captures':
       1:
         'name': 'keyword.other'
@@ -47,7 +72,7 @@
   },
   {
     'comment': 'Function names'
-    'begin': '(define)\\s*([\\w\\d\\_\\.]+)\\s*(?=\\()'
+    'begin': '(def|define)\\s+([\\w\\d\\_\\.]+)\\s*(?=\\()'
     'beginCaptures':
       1:
         'name': 'keyword.other'
@@ -84,10 +109,5 @@
         'name': 'keyword.other'
       2:
         'name': 'variable.other'
-  },
-  {
-    'comment': 'In-line comments'
-    'match': '\-\-.*'
-    'name': 'comment.line.double-dash'
   }
 ]

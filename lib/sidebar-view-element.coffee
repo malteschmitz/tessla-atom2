@@ -24,6 +24,7 @@ module.exports=
       fxLabel.innerHTML = "f(x)"
 
       fxName = document.createElement "span"
+      fxName.classList.add "cursor-pointer"
       fxName.innerHTML = name
 
       itemWrapper.appendChild addBtn
@@ -38,6 +39,9 @@ module.exports=
 
       @element = itemWrapper
 
+      fxName.addEventListener "click", (event) =>
+        @onShowFunction file, line, col
+
       addBtn.addEventListener "click", (event) =>
         @onAddTest
           functionName: name
@@ -50,6 +54,10 @@ module.exports=
         self.classList.remove "collapsed"
       else
         self.classList.add "collapsed"
+
+
+    onShowFunction: (file, line, column) ->
+      console.log "jump to file #{file} line #{line}, col #{column}"
 
 
     onAddTest: ({ functionName, projectPath }, event) ->

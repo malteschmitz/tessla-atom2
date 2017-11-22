@@ -4,6 +4,7 @@ fs = require "fs-extra"
 os = require "os"
 
 FileManager = require "./file-manager"
+{TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME} = require "./constants"
 
 module.exports=
   class Controller
@@ -85,7 +86,7 @@ module.exports=
 
       outFile = path.join "build", @viewManager.activeProject.binName
 
-      args = ["exec", "tessla", "clang", "-o", outFile]
+      args = ["exec", TESSLA_CONTAINER_NAME, "clang", "-o", outFile]
       args = args.concat @viewManager.activeProject.cFiles.map (arg) =>
         path.relative @viewManager.activeProject.projPath, arg .replace /\\/g, "/"
 
@@ -133,7 +134,7 @@ module.exports=
       @viewManager.disableButtons()
       @viewManager.enableStopButton()
 
-      args = ["exec", "tessla", "./build/#{@viewManager.activeProject.binName}"]
+      args = ["exec",  TESSLA_CONTAINER_NAME, "./build/#{@viewManager.activeProject.binName}"]
 
       @checkDockerContainer()
       @runningProcess = childProcess.spawn "docker", args
@@ -169,6 +170,38 @@ module.exports=
             detail: errors.join ""
           errorCallback.call @
 
+    filterScriptOutput: (line, stdout, errors, outputs) ->
+      prefix = line.substr(0, 8)
+      suffix = line.substr(8).trim()
+
+      switch prefix
+        when "[status]"
+          @viewManager.views.logView.addEntry ["status", suffix]
+        when "[clang ]"
+          @viewManager.views.errorsCView.addEntry [suffix]
+          errors.push suffix
+        when "[ld    ]"
+          @viewManager.views.errorsCView.addEntry [suffix]
+          errors.push suffix
+        when "[trace ]"
+          @viewManager.views.errorsTeSSLaView.addEntry [suffix]
+          errors.push suffix
+        when "[tessla]"
+          if stdout
+            @viewManager.views.consoleView.addEntry [suffix]
+            outputs.push suffix
+          else
+            @viewManager.views.errorsTeSSLaView.addEntry [suffix]
+            errors.push suffix
+        when "[instr ]"
+          @viewManager.views.consoleView.addEntry [suffix]
+          outputs.push suffix
+        when "[binary]"
+          @viewManager.views.consoleView.addEntry [suffix]
+          outputs.push suffix
+        else
+          @viewManager.views.errorsTeSSLaView.addEntry [line]
+          errors.push line
 
     onDoRV: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
@@ -198,7 +231,7 @@ module.exports=
       cFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.cFiles[0]
       tsslFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.tesslaFiles[0]
 
-      args = ["exec", "tessla", "tessla_rv", "#{cFile}", "#{tsslFile}"]
+      args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{cFile}", "#{tsslFile}"]
 
       @checkDockerContainer()
       @runningProcess = childProcess.spawn "docker", args
@@ -206,20 +239,27 @@ module.exports=
       command = "docker #{args.join " "}"
       @viewManager.views.logView.addEntry ["Docker", command]
 
+      errors = []
       outputs = []
       @runningProcess.stdout.on "data", (data) =>
-        line = data.toString()
-        if line.substr(0, 11) is "[TeSSLa RV]"
-          @viewManager.views.logView.addEntry ["TeSSLa RV", line.substr(11).trim()]
-        else
-          outputs.push line
-          @viewManager.views.consoleView.addEntry [line]
+        # line = data.toString()
+        # console.log line
+        # @filterScriptOutput line, errors, outputs
+        lines = data.toString().split "\n"
+        lines = lines.filter (v) => v isnt ""
+        console.log "stdout:", lines
+        for line in lines
+          @filterScriptOutput line, true, errors, outputs
 
-
-      errors = []
       @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsTeSSLaView.addEntry [data.toString()]
-        errors.push data.toString()
+        # line = data.toString()
+        # console.log line
+        # @filterScriptOutput line, errors, outputs
+        lines = data.toString().split "\n"
+        lines = lines.filter (v) => v isnt ""
+        console.log "stderr:", lines
+        for line in lines
+          @filterScriptOutput line, false, errors, outputs
 
       @runningProcess.on "close", (code, signal) =>
         @runningProcess = null
@@ -229,6 +269,8 @@ module.exports=
 
         @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
         @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
+
+        console.log errors
 
         if errors.length is 0
           # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]
@@ -249,15 +291,15 @@ module.exports=
 
 
     checkDockerContainer: ->
-      if childProcess.execSync("docker ps -q -f name=tessla").toString() is ""
+      if childProcess.execSync("docker ps -q -f name=#{TESSLA_CONTAINER_NAME}").toString() is ""
 
         args = [
           "run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid",
-          "--name", "tessla", "tessla", "sh"
+          "--name", TESSLA_CONTAINER_NAME, TESSLA_IMAGE_NAME, "sh"
         ]
 
         # make sure the actual container ist not still alive and remove it forcefully
-        childProcess.spawnSync "docker", ["rm", "-f", "tessla"]
+        childProcess.spawnSync "docker", ["rm", "-f", TESSLA_CONTAINER_NAME]
 
         # after that you can start a new one
         childProcess.spawnSync "docker", args

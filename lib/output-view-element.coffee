@@ -6,7 +6,7 @@ module.exports=
       itemWrapper = document.createElement "li"
       itemWrapper.classList.add "list-nested-item", "collapsed"
 
-      console.log content
+      # console.log content
 
       item = document.createElement if content.length > 0 then "div" else "li"
       item.classList.add "list-item"
