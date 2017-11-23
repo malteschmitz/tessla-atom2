@@ -71,11 +71,14 @@ module.exports=
           if event.status isnt "Downloading" and event.status isnt "Extracting"
             if event.id?
               messageChannelByID[event.id] = [] unless event.id of messageChannelByID
-              messageChannelByID[event.id].push { type: "Docker", msg: "#{event.id} #{event.status}" }
+              if event.id is "latest"
+                messageChannelByID[event.id].push { type: "entry", label: "Docker", msg: "#{event.id} #{event.status}" }
+              else
+                messageChannelByID[event.id].push "#{event.status}"
 
             else
               messageChannelByID.unidentified = [] unless "unidentified" of messageChannelByID
-              messageChannelByID.unidentified.push { type: "Docker", msg: "#{event.status}" }
+              messageChannelByID.unidentified.push { type: "entry", label: "Docker", msg: "#{event.status}" }
 
           # in the other case we will take care of updating the progress information
           else

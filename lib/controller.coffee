@@ -59,7 +59,9 @@ module.exports=
 
       @viewManager.saveEditors()
       @onDoRV
-        onSuccess: (lines) -> @viewManager.views.formattedOutputView.update lines
+        onSuccess: (lines) ->
+          @viewManager.views.logView.addEntry ["message", "Verification successfully finished."]
+          @viewManager.views.formattedOutputView.update lines
         onError: (errs) -> console.log errs
 
 

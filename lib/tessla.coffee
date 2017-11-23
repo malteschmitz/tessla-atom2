@@ -31,13 +31,21 @@ module.exports=
       return
 
     unless atom.config.get("tessla2.alreadySetUpDockerContainer") is yes
-      @messageQueue.push { type: "Docker", msg: "docker pull #{TESSLA_REGISTRY}" }
+      @messageQueue.push { type: "entry", label: "Docker", msg: "docker pull #{TESSLA_REGISTRY}" }
       Downloader.dockerDownload
         callback: (output) =>
           # log all messages from the docker pull request
-          @messageQueue = @messageQueue.concat messages for id, messages of output
+          for id, messages of output
+            if id is "latest" or id is "unidentified"
+              @messageQueue = @messageQueue.concat messages
+            else if messages.length > 1
+              @messageQueue.push { type: "listEntry", label: "Docker", title: id, msg: messages }
+            else
+              @messageQueue.push { type: "entry", label: "Docker", msg: messages[0] }
+
           # after processing all messages just flush them
           @flushMessageQueue()
+
           # start docker now
           @startDocker()
 
@@ -71,18 +79,18 @@ module.exports=
       if err?.code is "ENOENT"
         fs.mkdir @containerDir, =>
           # create container directory
-          @messageQueue.push type: "command", msg: "mkdir #{@containerDir}"
+          @messageQueue.push { type: "entry", label: "command", msg: "mkdir #{@containerDir}" }
 
           # create build directory in container directory
           fs.mkdir path.join(@containerDir, "build"), =>
-            @messageQueue.push type: "command", msg: "mkdir #{path.join @containerDir, "build"}";
+            @messageQueue.push { type: "entry", label: "command", msg: "mkdir #{path.join @containerDir, "build"}" }
 
             # start docker tessla container
             dockerArgs = ["run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid", "--name", TESSLA_CONTAINER_NAME, TESSLA_IMAGE_NAME, "sh"]
             childProcess.spawn "docker", dockerArgs
 
             # log command
-            @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
+            @messageQueue.push { type: "entry", label: "Docker", msg: "docker #{dockerArgs.join " "}" }
 
       else
         # if file exists just start docker
@@ -90,7 +98,7 @@ module.exports=
         childProcess.spawn "docker", dockerArgs
 
         # log command
-        @messageQueue.push type: "Docker", msg: "docker #{dockerArgs.join " "}"
+        @messageQueue.push { type: "entry", label: "Docker", msg: "docker #{dockerArgs.join " "}" }
 
       # flush whatever output is generated
       @flushMessageQueue()
@@ -287,5 +295,10 @@ module.exports=
   flushMessageQueue: ->
     # if the view elements are set up then we can flush the queue to the console
     if @viewManager.views?
-      @messageQueue.forEach (element) => @viewManager.views.logView.addEntry [element.type, element.msg]
+      @messageQueue.forEach (element) =>
+        if element.type is "entry"
+          @viewManager.views.logView.addEntry [element.label, element.msg]
+        else
+          @viewManager.views.logView.addListEntry element.title, [element.label, element.msg]
+
       @messageQueue = []
