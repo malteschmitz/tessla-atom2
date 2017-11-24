@@ -94,7 +94,7 @@
   },
   {
     'comment': 'In-streams'
-    'match': '\\b(in)\\s*([\\w\\d\\_\\.]+)'
+    'match': '\\b(in)\\s+([\\w\\d\\_\\.]+)'
     'captures':
       1:
         'name': 'keyword.other'
@@ -103,7 +103,7 @@
   },
   {
     'comment': 'Out-streams'
-    'match': '\\b(out)\\s*([\\w\\d\\_\\.]+)'
+    'match': '\\b(out)\\s+([\\w\\d\\_\\.]+)'
     'captures':
       1:
         'name': 'keyword.other'
