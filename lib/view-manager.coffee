@@ -55,18 +55,19 @@ module.exports=
 
 
     restoreViews: ->
+      # console.log "[TeSSLa2][debug] view-manager.coffee:58: Restore views."
       Promise.all([
-        atom.workspace.toggle @views.consoleView.getURI()
-        atom.workspace.toggle @views.errorsCView.getURI()
-        atom.workspace.toggle @views.errorsTeSSLaView.getURI()
-        atom.workspace.toggle @views.warningsView.getURI()
-        atom.workspace.toggle @views.logView.getURI()
-        atom.workspace.toggle FORMATTED_OUTPUT_VIEW
-        atom.workspace.toggle SIDEBAR_VIEW
+        atom.workspace.open @views.consoleView.getURI()
+        atom.workspace.open @views.errorsCView.getURI()
+        atom.workspace.open @views.errorsTeSSLaView.getURI()
+        atom.workspace.open @views.warningsView.getURI()
+        atom.workspace.open @views.logView.getURI()
+        atom.workspace.open FORMATTED_OUTPUT_VIEW
+        atom.workspace.open SIDEBAR_VIEW
       ]).then (views) =>
         viewsContainer = {}
 
-        views.forEach (view) ->
+        for view in views
           unless view?.getURI() is FORMATTED_OUTPUT_VIEW or view?.getURI() is SIDEBAR_VIEW
             switch view?.getTitle()
               when "Console" then viewsContainer.consoleView = view
@@ -103,6 +104,7 @@ module.exports=
 
 
     setUpSplitView: ->
+      # console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
       unless @activeProject.cFiles or @activeProject.tesslaFiles
         @showNotSetUpSplitViewNotification()
         return
@@ -136,14 +138,19 @@ module.exports=
 
 
     onFileChanged: (file) ->
+      # console.log "[TeSSLa2][debug] view-manager.coffee:141: Changed file.", file
       return unless file?
 
       newProjectPath = atom.project.relativizePath(file)[0]
+      #console.log file, newProjectPath
+      #console.log "[TeSSLa2][debug] view-manager.coffee:141: Change project directory ...", newProjectPath
 
       unless newProjectPath is @activeProject.projPath
         @activeProject.setProjPath newProjectPath
         @activeProject.setUpProjectStructure()
-        @views.sidebarViews?.update(this.activeProject);
+        @views.sidebarViews?.update @activeProject
+
+      # console.log "[TeSSLa2][debug] view-manager.coffee:153: New project ...", @activeProject
 
 
     showNoProjectNotification: ->

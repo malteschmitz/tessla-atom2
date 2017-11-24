@@ -15,6 +15,8 @@ module.exports=
   class Downloader
 
     @dockerDownload: ({ callback }) ->
+      # console.log "[TeSSLa2][debug] downloader.coffee:18: Check if docker is running.", docker
+
       # show notification to user that a pull request will start that may take
       # a few minutes if the latest version of tessla2 is not already downloaded
       notification = atom.notifications.addInfo "Downloading/Updating TeSSLa2 Docker image",

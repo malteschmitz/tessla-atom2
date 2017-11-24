@@ -12,11 +12,9 @@ module.exports=
 
 
     constructor: (@projPath) ->
-      @outputDir = ""
       @binName = ""
 
       if @projPath?
-        @updateOutputDir()
         @updateBinName()
 
       else
@@ -28,15 +26,10 @@ module.exports=
 
     setProjPath: (projPath) ->
       @projPath = projPath
-      @updateOutputDir()
       @updateBinName()
 
       @cFiles = @getCFiles()
       @tesslaFiles = @getTeSSLaFiles()
-
-
-    updateOutputDir: ->
-      @outputDir = path.join @projPath, "build"
 
 
     updateBinName: ->
@@ -79,5 +72,4 @@ module.exports=
 
     clear: ->
       @projPath = ""
-      @outputDir = ""
       @binName = ""

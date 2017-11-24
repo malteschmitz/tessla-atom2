@@ -25,6 +25,13 @@
     'name': 'support.function'
   },
   {
+    'comment': 'Detect functions'
+    'match': '\\b(\\w[\\w\\d_-]*)\\s*\\('
+    'captures':
+      1:
+        'name': 'entity.name.function'
+  },
+  {
     'comment': 'Language constants'
     'match': '\\b(true|false)\\b'
     'name': 'constant.language'

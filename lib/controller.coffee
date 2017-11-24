@@ -18,22 +18,6 @@ module.exports=
       @containerDir = path.join os.homedir(), ".tessla-env"
       @containerBuild = path.join @containerDir, "build"
 
-
-    createZLogFile: ->
-      binaryName = @viewManager.activeProject.binName
-      zlogFile = path.join @containerDir, "zlog.conf"
-
-      formats  = "[formats]\n"
-      formats += "variable_values = \"#{atom.config.get "tessla2.variableValueFormatting"}\"\n"
-      formats += "function_calls = \"#{atom.config.get "tessla2.functionCallFormatting"}\"\n"
-      rules    = "[rules]\n";
-      rules   += "variable_values_cat.DEBUG \"instrumented_#{binaryName}.trace\"; variable_values\n";
-      rules   += "function_calls_cat.DEBUG \"instrumented_#{binaryName}.trace\"; function_calls\n";
-
-      fs.unlink zlogFile if fs.existsSync zlogFile
-      fs.writeFileSync zlogFile, formats + rules
-
-
     onCompileAndRunCCode: ->
       unless @viewManager.activeProject.projPath?
         @viewManager.showNoProjectNotification()
@@ -209,10 +193,13 @@ module.exports=
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
 
+      # console.log "[TeSSLa2][debug] controller.coffee:196: Compile project", @viewManager.activeProject.projPath
+
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
         return
 
+      # console.log "[TeSSLa2][debug] controller.coffee:196: Compile project", @viewManager.activeProject.cFiles, @viewManager.activeProject.cFiles?
       unless @viewManager.activeProject.cFiles?
         @viewManager.showNoCompilableCFilesNotification()
         return
@@ -249,7 +236,6 @@ module.exports=
         # @filterScriptOutput line, errors, outputs
         lines = data.toString().split "\n"
         lines = lines.filter (v) => v isnt ""
-        console.log "stdout:", lines
         for line in lines
           @filterScriptOutput line, true, errors, outputs
 
@@ -259,7 +245,6 @@ module.exports=
         # @filterScriptOutput line, errors, outputs
         lines = data.toString().split "\n"
         lines = lines.filter (v) => v isnt ""
-        console.log "stderr:", lines
         for line in lines
           @filterScriptOutput line, false, errors, outputs
 
@@ -272,7 +257,7 @@ module.exports=
         @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
         @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
 
-        console.log errors
+        # console.log errors
 
         if errors.length is 0
           # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]
@@ -315,10 +300,6 @@ module.exports=
       fs.mkdirSync path.join @containerDir, "build"
       @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
 
-      @createZLogFile()
-      @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=build,.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]
+      @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]
 
-      fs.copy @viewManager.activeProject.projPath, @containerDir,
-        filter: (src) ->
-          no if path.posix.basename(src) is 'build'
-          yes
+      fs.copySync @viewManager.activeProject.projPath, @containerDir
