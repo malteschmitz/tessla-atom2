@@ -1,7 +1,7 @@
 {
   "name": "tessla2",
   "main": "./lib/tessla",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "This packages provides some IDE-like functions for C-Code and TeSSLa specifications",
   "keywords": [
     "tessla",
