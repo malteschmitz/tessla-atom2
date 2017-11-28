@@ -155,98 +155,57 @@ module.exports=
 
     showNoProjectNotification: ->
       message = "There is no active project in your workspace. Open and activate at least one file of the project you want to compile and run in your workspace."
-
       atom.notifications.addError "Unable to compile and run C code",
         detail: message
-
       @views.consoleView.addEntry [message]
 
 
     showNoCompilableCFilesNotification: ->
       message = "There are no C files to compile in this project. Create at least one C file in this project containing a main function to build a runable binary."
-
       atom.notifications.addError "Unable to compile C files",
         detail: message
-
       @views.errorsCView.addEntry [message]
 
 
     showNoCBinaryToExecuteNotification: ->
       message = "There is no C binary in the build directory which can be executed. You first have to build your C code to generate a binary."
-
       atom.notifications.addError "Unable to run binary",
         detail: message
-
       @views.errorsCView.addEntry [message]
 
 
     showNotSetUpSplitViewNotification: ->
       message = "There are no \".tessla\" and \".c\" files to put into split view in the current project. Please open at least one file of your project and activate it in workspace to properly set up the split view. The split view can be set up by right click onto your source file in the text editor and select \"Set up TeSSLa split view\" in the context menu."
-
       atom.notifications.addWarning "Could not set up the split view",
         detail: message
-
       @views.warningsView.addEntry [message]
 
 
     showNoTeSSLaJSONFoundNotification: ->
       message = "No TeSSLa JSON file found!";
-
       atom.notifications.addError "Unable to find TeSSLa JSON file",
         detail: message
-
       @views.consoleView.addEntry [message]
+
+
+    showSuccessfullyInstrumentedNotification: ->
+      message = "Verification of project files successfully finished."
+      atom.notifications.addSuccess message
+      @views.logView.addEntry ["message", message]
 
 
     showNoActiveProjectForSplitViewNotification: ->
       message = "No Project currently active. To set up the split view at least one file should be active for setting up the split view"
-
       atom.notifications.addWarning "Could not set up the split view",
         detail: message
-
       @views.warningsView.addEntry [message]
 
 
     showCurrentlyRunningProcessNotification: ->
       message = "There is a process that is currently running. A new action can only be performed if there is no action currently running."
-
       atom.notifications.addWarning "Unable to perform action",
         detail: message
-
       @views.consoleView.addEntry [message]
-
-
-    onHighlightUnusedFunctions: ({ unusedFunctions, tesslaFile }) ->
-      editors = workspace.getTextEditors()
-      editorFile = null
-
-      editors.forEach (editor) ->
-        editorFile = editor if editor?.getPath() is tesslaFile
-
-      if editorFile?
-        @tesslaUnsedFunctionMarkers.forEach (marker) -> marker.destroy()
-        @tesslaUnsedFunctionMarkers = []
-
-        text = editorFile.getText()
-
-        lineCounter = 0
-
-        text.split("\n").forEach (line) =>
-          unusedFunctions.forEach (func) =>
-            lookupText = "function_calls(\"#{func}\")";
-            idx = line.indexOf lookupText
-
-            unless idx is -1
-              range = new Range new Point(lineCounter, idx), new Point(lineCounter, idx + lookupText.length)
-              marker = editorFile.markBufferRange range
-
-              @tesslaUnsedFunctionMarkers.push marker
-
-              editorFile.decorateMarker marker,
-                type: "highlight"
-                class: "tessla-unused-function"
-
-          lineCounter++
 
 
     highlightTeSSLaError: ({ error, file }) ->
@@ -315,13 +274,6 @@ module.exports=
             class: "tessla-syntax-dot"
 
 
-    onHideErrorMarkers: ->
-      return if @tesslaMarkers.length is 0
-
-      @tesslaTooltipDecorations.forEach (decoration) -> decoration.destroy()
-      @tesslaTooltipDecorations = []
-
-
     disableButtons: ->
       @toolBarButtons.BuildAndRunCCode.setEnabled no
       @toolBarButtons.BuildCCode.setEnabled no
@@ -344,12 +296,6 @@ module.exports=
       @toolBarButtons.Stop.setEnabled no
 
 
-    removeTeSSLaSourceMarkers: ->
-      @tesslaMarkers.forEach (marker) -> marker.destroy()
-      @tesslaMarkers = []
-      @tesslaTooltipDecorations = []
-
-
     saveEditors: =>
       activeEditor = atom.workspace.getActiveTextEditor()
       currentProjPath = @activeProject.projPath
@@ -359,3 +305,27 @@ module.exports=
 
       activeEditor?.save()
       @activeProject.setProjPath currentProjPath
+
+    showIndeterminateProgress: (title, text, dismissable=yes) ->
+      # show notification to user that a pull request will start that may take
+      # a few minutes if the latest version of tessla2 is not already downloaded
+      notification = atom.notifications.addInfo title,
+        detail: text
+        dismissable: dismissable
+
+      progressWrapper = document.createElement "div"
+      progressWrapper.classList.add "block"
+
+      progress = document.createElement "progress"
+      progress.classList.add "block", "full-width-progress"
+
+      progressWrapper.appendChild progress
+
+      try
+        notificationView = atom.views.getView notification
+        notificationViewContent = notificationView.element.querySelector ".detail-content"
+        notificationViewContent?.appendChild progressWrapper
+      catch _
+
+      # return the notification object back
+      return notification

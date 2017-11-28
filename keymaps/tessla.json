@@ -1,6 +1,7 @@
 {
   ".platform-darwin .workspace .editor:not(.mini)": {
-    "cmd-shift-t": "tessla2:toggle",
+    "cmd-shift-t": "tessla2:activate",
+    "cmd-shift-d": "tessla2:deactivate",
     "cmd-b":       "tessla2:build-c-code",
     "cmd-e":       "tessla2:run-c-code",
     "cmd-r":       "tessla2:build-and-run-c-code",
@@ -9,7 +10,8 @@
     "cmd-enter":   "tessla2:set-up-split-view"
   },
   ".platform-win32 .workspace .editor:not(.mini), .platform-linux .workspace .editor:not(.mini)": {
-    "ctrl-shift-t": "tessla2:toggle",
+    "ctrl-shift-t": "tessla2:activate",
+    "ctrl-shift-d": "tessla2:deactivate",
     "ctrl-b":       "tessla2:build-c-code",
     "ctrl-e":       "tessla2:run-c-code",
     "ctrl-r":       "tessla2:build-and-run-c-code",

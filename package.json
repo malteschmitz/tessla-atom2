@@ -6,10 +6,16 @@
   "keywords": [
     "tessla",
     "tessla-ide",
-    "ide"
+    "ide",
+    "atom",
+    "instrumenting",
+    "verification",
+    "runtime",
+    "C",
+    "C-Code"
   ],
   "activationCommands": {
-    "atom-workspace": "tessla2:toggle"
+    "atom-workspace": "tessla2:activate"
   },
   "repository": "https://github.com/malteschmitz/tessla2-atom",
   "license": "MIT",
@@ -18,15 +24,11 @@
   },
   "dependencies": {
     "atom-package-deps": "^4.6.0",
-    "decompress-zip": "^0.3.0",
     "dockerode": "^2.5.3",
     "fs": "0.0.1-security",
     "fs-extra": "^3.0.1",
-    "on-finished": "^2.3.0",
     "os": "^0.1.1",
     "path": "^0.12.7",
-    "request": "^2.81.0",
-    "request-progress": "^3.0.0",
     "scan-folder": "^1.0.0"
   },
   "consumedServices": {

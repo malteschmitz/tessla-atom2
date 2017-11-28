@@ -2,56 +2,147 @@ path = require "path"
 childProcess = require "child_process"
 fs = require "fs-extra"
 os = require "os"
+Docker = require "dockerode"
+docker = new Docker
 
 FileManager = require "./file-manager"
-{TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME} = require "./constants"
+SourceHighlighter = require "./source-highlighter"
+Downloader = require "./downloader"
+MessageQueue = require "./message-queue"
+{TESSLA_REGISTRY, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME} = require "./constants"
 
 module.exports=
   class Controller
-    sfConfig:
-      dotfolder: no
-      dotfiles: no
-      modules: no
-
     constructor: (@viewManager) ->
       @runningProcess = null
       @containerDir = path.join os.homedir(), ".tessla-env"
       @containerBuild = path.join @containerDir, "build"
+      @SourceHighlighter = new SourceHighlighter
+      @messageQueue = new MessageQueue @viewManager
+      @initiallyPulled = no
+
+
+    onViewSetUpReady: ->
+      @messageQueue.flush()
+
 
     onCompileAndRunCCode: ->
-      unless @viewManager.activeProject.projPath?
-        @viewManager.showNoProjectNotification()
-        return
-
-      if @runningProcess?
-        @viewManager.showCurrentlyRunningProcessNotification()
-        return
-
-      @viewManager.saveEditors()
-      @onBuildCCode
-        onSuccess: -> @onRunBinary {}
-
-
-    onCompileAndRunProject: ->
+      # if there is not a current project stop further exectution
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
-        return
-
-      if @runningProcess?
+      # if there is already a process running stop further exectution
+      else if @runningProcess?
         @viewManager.showCurrentlyRunningProcessNotification()
-        return
+      # if everything is OK try to compile and run C-Code
+      else
+        # save editors and start compiliation and execution process
+        @viewManager.saveEditors()
+        # check if the Docker daemon is still running
+        # check if the Docker daemon is still running
+        @isDockerDaemonRunning
+          # Docker daemon not running
+          ifNot: =>
+            # show notification to user
+            message = "The Docker daemon does not respond. Maybe Docker is not running? The TeSSLa2 Package could not be started since it depends on Docker. Please check your Docker installation and try again later."
+            atom.notifications.addError "Docker daemon does not respond.",
+              detail: message
+            @messageQueue.enqueueEntries { type: "entry", title: "", label: "message", msg: message }
+            @messageQueue.flush()
+          ifYes: =>
+            # define a variable which defines the process behavior
+            compileAndRun = () => @onBuildCCode onSuccess: -> @onRunBinary()
+            # define the process as a function to not copy and paste the whole
+            # stuff twice into the if-else case below
+            verification = () =>
+              # check if container is still running
+              @isDockerContainerRunning
+                # if the docker container is also running everything is fine and we
+                # can start doing RV
+                ifYes: => compileAndRun()
+                # if container is not running try to do the setup again
+                ifNot: => @isTeSSLaEnvExisting
+                  # if the env directory is existing we can directly start the
+                  # docker container itself and the do RV
+                  ifYes: => @startDockerContainer => compileAndRun()
+                  # if the .tessla-env directory does not exist create it start
+                  # a container and then do RV
+                  ifNot: => @createTeSSLaEnv => @startDockerContainer => compileAndRun()
+            # check if there was an initial docker pull
+            if not @initiallyPulled
+              # first pull and then try the RV stuff
+              @dockerPull => verification()
+            else
+              # if ther was already an initial docker pull just try the RV stuff
+              verification()
 
-      @viewManager.saveEditors()
-      @onDoRV
-        onSuccess: (lines) ->
-          @viewManager.views.logView.addEntry ["message", "Verification successfully finished."]
-          @viewManager.views.formattedOutputView.update lines
-        onError: (errs) -> console.log errs
+    onCompileAndRunProject: ->
+      # if there is no current Project stop further execution
+      if @viewManager.activeProject.projPath is ""
+        @viewManager.showNoProjectNotification()
+      # if there is already a process running stop further execution
+      else if @runningProcess?
+        @viewManager.showCurrentlyRunningProcessNotification()
+      # if everything is OK try to start verification process
+      else
+        # save editors and start compilation and instrumenting process
+        @viewManager.saveEditors()
+        # check if the Docker daemon is still running
+        @isDockerDaemonRunning
+          # Docker daemon not running
+          ifNot: =>
+            # show notification to user
+            message = "The Docker daemon does not respond. Maybe Docker is not running? The TeSSLa2 Package could not be started since it depends on Docker. Please check your Docker installation and try again later."
+            atom.notifications.addError "Docker daemon does not respond.",
+              detail: message
+            @messageQueue.enqueueEntries { type: "entry", title: "", label: "message", msg: message }
+            @messageQueue.flush()
+          # Docker daemon is running
+          ifYes: =>
+            # define a variable containing the doRV stuff
+            doRV = (notification) =>
+              @onDoRV
+                onSuccess: (lines) ->
+                  notification.dismiss()
+                  @viewManager.showSuccessfullyInstrumentedNotification()
+                  @viewManager.views.formattedOutputView.update lines
+                onError: (errs) ->
+                  notification.dismiss()
+                  for error in errs
+                    @viewManager.views.errorsTeSSLaView.addEntry [error]
+            # define the process as a function to not copy and paste the whole
+            # stuff twice into the if-else case below
+            verification = () =>
+              # show a notification with a indeterminate progress to show something is
+              # happening
+              notification = @viewManager.showIndeterminateProgress(
+                "Compiling/Instrumenting",
+                "Compiling and instrumenting project files using the TeSSLa2 Docker-container. For further information see \"Console\"/\"Log\" view."
+              )
+              # check if container is still running
+              @isDockerContainerRunning
+                # if the docker container is also running everything is fine and we
+                # can start doing RV
+                ifYes: => doRV(notification)
+                # if container is not running try to do the setup again
+                ifNot: => @isTeSSLaEnvExisting
+                  # if the env directory is existing we can directly start the
+                  # docker container itself and the do RV
+                  ifYes: => @startDockerContainer => doRV(notification)
+                  # if the .tessla-env directory does not exist create it start
+                  # a container and then do RV
+                  ifNot: => @createTeSSLaEnv => @startDockerContainer => doRV(notification)
+            # check if there was an initial docker pull
+            if not @initiallyPulled
+              # first pull and then try the RV stuff
+              @dockerPull => verification()
+            else
+              # if ther was already an initial docker pull just try the RV stuff
+              verification()
 
 
     onBuildCCode: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
+      successCallback = if onSuccess? then onSuccess else () -> {}
+      errorCallback = if onError? then onError else () -> {}
 
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
@@ -76,11 +167,15 @@ module.exports=
       args = args.concat @viewManager.activeProject.cFiles.map (arg) =>
         path.relative @viewManager.activeProject.projPath, arg .replace /\\/g, "/"
 
-      @checkDockerContainer()
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
       @viewManager.views.logView.addEntry ["Docker", command]
+
+      outputs = []
+      @runningProcess.stdout.on "data", (data) =>
+        outputs.push data.toString()
+        # console.log data.toString()
 
       errors = []
       @runningProcess.stderr.on "data", (data) =>
@@ -105,10 +200,7 @@ module.exports=
           errorCallback.call @
 
 
-    onRunBinary: ({ onSuccess, onError }) ->
-      successCallback = onSuccess ? ->
-      errorCallback = onError ? ->
-
+    onRunBinary: ->
       unless @viewManager.activeProject.projPath?
         @viewManager.showNoProjectNotification()
         return
@@ -122,7 +214,6 @@ module.exports=
 
       args = ["exec",  TESSLA_CONTAINER_NAME, "./build/#{@viewManager.activeProject.binName}"]
 
-      @checkDockerContainer()
       @runningProcess = childProcess.spawn "docker", args
 
       binary = "docker #{args.join " "}"
@@ -147,14 +238,11 @@ module.exports=
         @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
         @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
 
-        if errors.length is 0
-          successCallback.call @
-
-        else
+        if errors.length isnt 0
           @viewManager.views.logView.addEntry ["message", "An error occurred while running C binary"]
           atom.notifications.addError "Errors while running the C binary",
             detail: errors.join ""
-          errorCallback.call @
+
 
     filterScriptOutput: (line, stdout, errors, outputs) ->
       prefix = line.substr(0, 8)
@@ -189,6 +277,7 @@ module.exports=
           @viewManager.views.errorsTeSSLaView.addEntry [line]
           errors.push line
 
+
     onDoRV: ({ onSuccess, onError }) ->
       successCallback = onSuccess ? ->
       errorCallback = onError ? ->
@@ -197,19 +286,23 @@ module.exports=
 
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
+        errorCallback.call @, []
         return
 
       # console.log "[TeSSLa2][debug] controller.coffee:196: Compile project", @viewManager.activeProject.cFiles, @viewManager.activeProject.cFiles?
       unless @viewManager.activeProject.cFiles?
         @viewManager.showNoCompilableCFilesNotification()
+        errorCallback.call @, []
         return
 
       unless @viewManager.activeProject.tesslaFiles?
         @viewManager.showNoCompilableTeSSLaFilesNotification()
+        errorCallback.call @, []
         return
 
       if @runningProcess?
         @viewManager.showCurrentlyRunningProcessNotification()
+        errorCallback.call @, []
         return
 
       @viewManager.disableButtons()
@@ -222,7 +315,6 @@ module.exports=
 
       args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{cFile}", "#{tsslFile}"]
 
-      @checkDockerContainer()
       @runningProcess = childProcess.spawn "docker", args
 
       command = "docker #{args.join " "}"
@@ -259,16 +351,24 @@ module.exports=
 
         # console.log errors
 
-        if errors.length is 0
+        if errors.length is 0 and (code is 0) and not (signal?)
           # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]
           # atom.notifications.addSuccess "Successfully compiled C sources"
           successCallback.call @, outputs
 
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling project files"]
-          atom.notifications.addError "Errors while compiling project files",
+        else if code? and code isnt 0
+          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling or instrumenting project files"]
+          atom.notifications.addError "Errors while compiling and instrumenting project files",
             detail: errors.join ""
-          errorCallback.call @
+          errors.push "Errors while compiling and instrumenting project files"
+          errorCallback.call @, errors
+
+        else if signal?
+          @viewManager.views.logView.addEntry ["message", "An error occurred while instrumenting project files. The process was killed due to signal #{signal}"]
+          atom.notifications.addError "Errors while instrumenting project files. Process was killed due to signal #{signal}.",
+            detail: errors.join ""
+          errors.push "Errors while instrumenting project files. Process was killed due to signal #{signal}."
+          errorCallback.call @, errors
 
 
     onStopRunningProcess: ->
@@ -277,20 +377,134 @@ module.exports=
         @viewManager.views.logView.addEntry ["command", "kill -9 #{@runningProcess.pid}"]
 
 
-    checkDockerContainer: ->
-      if childProcess.execSync("docker ps -q -f name=#{TESSLA_CONTAINER_NAME}").toString() is ""
+    createTeSSLaEnv: (callback) ->
+      # make sure callbacks are always defined
+      callback = if callback? then callback else () -> {}
+      # create container directory
+      fs.mkdir @containerDir, =>
+        # log make command
+        @viewManager.views.logView.addEntry ["command", "mkdir #{@containerDir}"]
+        # create build directory in container directory
+        fs.mkdir path.join(@containerDir, "build"), =>
+          # log make command
+          @viewManager.views.logView.addEntry ["command", "mkdir #{path.join @containerDir, "build"}"]
+          # now directories are prepared so just start docker
+          callback()
 
-        args = [
-          "run", "--volume", "#{@containerDir}:/tessla", "-w", "/tessla", "-tid",
-          "--name", TESSLA_CONTAINER_NAME, TESSLA_IMAGE_NAME, "sh"
-        ]
 
-        # make sure the actual container ist not still alive and remove it forcefully
-        childProcess.spawnSync "docker", ["rm", "-f", TESSLA_CONTAINER_NAME]
+    isTeSSLaEnvExisting: ({ ifYes, ifNot }) ->
+      # make sure callbacks are always defined
+      ifYes = if ifYes? then ifYes else () -> {}
+      ifNot = if ifNot? then ifNot else () -> {}
+      # if the mounted system is not existing anymore
+      if fs.existsSync @containerDir
+        ifYes()
+      else
+        ifNot()
 
-        # after that you can start a new one
-        childProcess.spawnSync "docker", args
-        @viewManager.views.logView.addEntry ["Docker", "docker #{args.join " "}"]
+
+    isDockerImageExisiting: ({ ifYes, ifNot }) ->
+      # make sure callbacks are always defined
+      ifYes = if ifYes? then ifYes else () -> {}
+      ifNot = if ifNot? then ifNot else () -> {}
+      # gather information about the docker needed docker image
+      information = childProcess.execSync("docker images | grep #{TESSLA_IMAGE_NAME}")
+      console.log information
+      if information.toString() isnt ""
+        ifYes()
+      else
+        ifNot()
+
+
+    isDockerContainerRunning: ({ ifYes, ifNot }) ->
+      # make sure callbacks are always defined
+      ifYes = if ifYes? then ifYes else () -> {}
+      ifNot = if ifNot? then ifNot else () -> {}
+      # get container ID. If the container is not running there will be no ID
+      # returned by the process
+      containerID = childProcess.execSync("docker ps -q -f name=#{TESSLA_CONTAINER_NAME}").toString()
+      # if the container exists just call the callback. If not make the container
+      # running
+      if containerID isnt ""
+        # call the if yes callback function
+        ifYes()
+      else
+        # if the there was no ID the container is not running so call the ifNot
+        # callback
+        ifNot()
+
+
+    isDockerDaemonRunning: ({ ifYes, ifNot }) ->
+      # make sure callbacks are always defined
+      ifYes = if ifYes? then ifYes else () -> {}
+      ifNot = if ifNot? then ifNot else () -> {}
+
+      # check if docker is running
+      docker.info().then (resolved) =>
+        ifYes()
+      .catch (rejected) =>
+        console.log "[TeSSLa2][debug]:controller.coffe:408: docker is not running", rejected
+        ifNot()
+
+
+    startDockerContainer: (callback) ->
+      # make sure callbacks are always defined
+      callback = if callback? then callback else () -> {}
+      # define docker args
+      dockerArgs = [
+        "run",                                  # starting a container from an existing image
+        "--volume", "#{@containerDir}:/tessla", # mounting the container in the given argument
+        "-w", "/tessla",                        # setting the working directory (`cd /tessla` inside the container)
+        "-tid",                                 # allocate a pseudo-TTY keep STDIN open even if not attached and tun container in background (-t -i -d -> `docker run -- help`)
+        "--name", TESSLA_CONTAINER_NAME,        # name of the container will be the argument
+        TESSLA_IMAGE_NAME,                      # specifies the name of the image
+        "sh"                                    # executes the shell inside the container to prevent stopping the container imediatly
+      ]
+      # start process using defined arguments
+      dockerContainer = childProcess.spawn "docker", dockerArgs
+      # log command
+      @messageQueue.enqueueEntry { type: "entry", title: "", label: "Docker", msg: "docker #{dockerArgs.join " "}" }
+      @messageQueue.flush()
+      # wait for docker comand
+      dockerContainer.on "close", (code) =>
+        if code? and code is 0
+          # call callback function
+          callback()
+
+
+    dockerPull: (callback) ->
+      # make sure callbacks are always defined
+      callback = if callback? then callback else () -> {}
+      # set flag that there was at least one initial pull
+      @initiallyPulled = yes
+      # update or download TeSSLa2
+      @messageQueue.enqueueEntry { type: "entry", title: "", label: "Docker", msg: "docker pull #{TESSLA_REGISTRY}" }
+      Downloader.dockerDownload
+        callback: (output) =>
+          # log all messages from the docker pull request
+          for id, messages of output
+            if id is "latest" or id is "unidentified"
+              @messageQueue.enqueueEntries messages
+            else if messages.length > 1
+              @messageQueue.enqueueEntry { type: "listEntry", label: "Docker", title: id, msg: messages }
+            else
+              @messageQueue.enqueueEntry { type: "entry", label: "Docker", title: "", msg: messages[0] }
+          # after processing all messages just flush them
+          @messageQueue.flush()
+          # execute callback
+          callback()
+
+
+    dockerPullRequest: () ->
+      @isDockerDaemonRunning
+        ifYes: => @dockerPull => @startDockerContainer()
+        ifNot: =>
+          # show notification to user
+          message = "The Docker daemon does not respond. In most cases you just need to start Docker. If you started Docker and this message still appears check your Docker installation. If you forgot to start Docker just restart it and then execute a command in order to reactivate all package features."
+          atom.notifications.addError "Docker daemon does not respond.",
+            detail: message
+          @messageQueue.enqueueEntries { type: "entry", title: "", label: "message", msg: message }
+          @messageQueue.flush()
 
 
     transferFilesToContainer: ->

@@ -5,8 +5,12 @@
         "type": "separator"
       },
       {
-        "label": "Toggle TeSSLa2",
-        "command": "tessla2:toggle"
+        "label": "Activate TeSSLa2",
+        "command": "tessla2:activate"
+      },
+      {
+        "label": "Deactivate TeSSLa2",
+        "command": "tessla2:deactivate"
       },
       {
         "type": "separator"
@@ -27,8 +31,12 @@
           "label": "TeSSLa2",
           "submenu": [
             {
-              "label": "Toggle",
-              "command": "tessla2:toggle"
+              "label": "Activate",
+              "command": "tessla2:activate"
+            },
+            {
+              "label": "Deactivate",
+              "command": "tessla2:deactivate"
             },
             {
               "type": "separator"

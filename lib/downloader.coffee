@@ -1,11 +1,3 @@
-request = require "request"
-progress = require "request-progress"
-fs = require "fs"
-path = require "path"
-os = require "os"
-DecompressZip = require "decompress-zip"
-childProcess = require "child_process"
-onFinished = require "on-finished"
 Docker = require "dockerode"
 docker = new Docker
 
@@ -129,7 +121,6 @@ module.exports=
           downloadProgressTime.innerHTML = "Download: waiting"
           downloadProgressTime.innerHTML = "Download: #{downloadCurrentMB}MB/#{downloadMaxMB}MB (#{downloadPercentage}%)" if downloadPercentage isnt 0
           downloadProgressTime.innerHTML = "Download: complete" if downloadPercentage is 100
-
 
           extractingProgressTime.innerHTML = "Extraction: waiting"
           extractingProgressTime.innerHTML = "Extraction: #{extractingCurrentMB}MB/#{extractingMaxMB}MB (#{extractingPercentage}%)" if extractingPercentage isnt 0
