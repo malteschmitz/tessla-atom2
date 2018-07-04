@@ -5,7 +5,9 @@
     "cmd-b":       "tessla2:build-c-code",
     "cmd-e":       "tessla2:run-c-code",
     "cmd-r":       "tessla2:build-and-run-c-code",
+    "cmd-p":       "tessla2:create-trace",
     "cmd-t":       "tessla2:build-and-run-project",
+    "cmd-h":       "tessla2:run-project-by-trace",
     "ctrl-c":      "tessla2:stop-current-process",
     "cmd-enter":   "tessla2:set-up-split-view"
   },
@@ -15,7 +17,9 @@
     "ctrl-b":       "tessla2:build-c-code",
     "ctrl-e":       "tessla2:run-c-code",
     "ctrl-r":       "tessla2:build-and-run-c-code",
+    "ctrl-p":       "tessla2:craete-trace",
     "ctrl-t":       "tessla2:build-and-run-project",
+    "ctrl-h":       "tessla2:run-project-by-trace",
     "ctrl-shift-c": "tessla2:stop-current-process",
     "ctrl-enter":   "tessla2:set-up-split-view"
   }

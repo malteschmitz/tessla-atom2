@@ -1,10 +1,13 @@
-{SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "./constants"
 Project = require "./project"
+MessageQueue = require "./message-queue"
+
+{ SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "./constants"
 
 module.exports=
-  class ViewManager
+  class View
 
     constructor: ->
+      # intialize instance variables
       @views = {}
       @toolBarButtons = {}
 
@@ -14,6 +17,14 @@ module.exports=
 
       @activeProject = new Project
 
+      # define queues
+      @logQueue = new Queue
+      @consoleQueue = new Queue
+      @errorsCQueue = new Queue
+      @errorsTeSSLaQueue = new Queue
+      @warningsQueue = new Queue
+
+      # bind event listener
       atom.workspace.onDidDestroyPaneItem @onDestroyedView
       atom.workspace.onDidStopChangingActivePaneItem (item) =>
         if atom.workspace.isTextEditor item
@@ -27,9 +38,73 @@ module.exports=
       atom.workspace.observeTextEditors (editor) =>
         editor.onDidSave (event) =>
           @onFileSavedOrAdded event.path
-
         editor.onDidStopChanging (event) =>
           @views.sidebarViews?.update @activeProject
+
+
+    printMessage: ({channel, type, title, label, message}) ->
+      # do not anything if not all fields defined
+      if not (channel?) or not(type?) or not(title?) or not(label) or not(message)
+        return
+
+      # define a function that will construct a valid message queue message for us
+      constructMessage = (labeled, obj) ->
+        result = {}
+        result.content = obj.content
+        result.label = obj.label if labeled
+        if obj.type is "listEntry"
+          result.title =  obj.title
+          result.isListEntry = yes
+        else
+          result.isListEntry = no
+        # pass result to caller
+        result
+
+      # define a function that will add the message to the view component
+      logMessage = (labeled, view, obj) ->
+        result = []
+        result.push obj.label if labeled
+        result.push obj.content
+        if obj.isListEntry
+          view.addListEntry obj.title, result
+        else
+          view.addEntry result
+
+      switch channel
+        when 'console'
+          @consoleQueue.enqueueEntry constructMessage no, { type, title, label, message }
+          logMessage(no, @views.logView, msg) for msg in @consoleQueue.flush()
+        when 'errorsC'
+          @errorsCQueue.enqueueEntry constructMessage no, { type, title, label, message }
+          logMessage(no, @views.errorsCView, msg) for msg in @errorsCQueue.flush()
+        when 'errorsTeSSLa'
+          @errorsTeSSLaQueue.enqueueEntry constructMessage no, { type, title, label, message }
+          logMessage(no, @views.errorsTeSSLaView, msg) for msg in @errorsTeSSLaQueue.flush()
+        when 'warnings'
+          @warningsQueue.enqueueEntry constructMessage no, { type, title, label, message }
+          logMessage(no, @views.warningsView, msg) for msg in @warningsQueue.flush()
+        when 'log'
+          @logQueue.enqueueEntry constructMessage yes, { type, title, label, message }
+          logMessage(yes, @views.logView, msg) for msg in @logQueue.flush()
+
+
+    onDidSetup: ->
+      # define a function that will add the message to the view component
+      logMessage = (labeled, view, obj) ->
+        result = []
+        result.push obj.label if labeled
+        result.push obj.content
+        if obj.isListEntry
+          view.addListEntry obj.title, result
+        else
+          view.addEntry result
+
+      # flush all queues
+      logMessage(no, @views.logView, msg) for msg in @logQueue.flush()
+      logMessage(no, @views.logView, msg) for msg in @consoleQueue.flush()
+      logMessage(no, @views.errorsCView, msg) for msg in @errorsCQueue.flush()
+      logMessage(no, @views.errorsTeSSLaView, msg) for msg in @errorsTeSSLaQueue.flush()
+      logMessage(no, @views.warningsView, msg) for msg in @warningsQueue.flush()
 
 
     connectBtns: (btns) ->
@@ -41,7 +116,6 @@ module.exports=
         @views[key] = value unless key of @views or @views[key]?
 
       @views.sidebarViews?.setViewManager @
-
 
     addIconsToTabs: ->
       viewTabs = document.querySelectorAll ".tab[data-type=FlexiblePanelView]"
@@ -168,13 +242,6 @@ module.exports=
       @views.errorsCView.addEntry [message]
 
 
-    showNoCompilableTraceFilesNotification: ->
-      message = "There are no trace files to instrument in this project. Create at least one trace file in this project which can be instrumented."
-      atom.notifications.addError "Unable to instrument trace file",
-        detail: message
-      @views.errorsCView.addEntry [message]
-
-
     showNoCBinaryToExecuteNotification: ->
       message = "There is no C binary in the build directory which can be executed. You first have to build your C code to generate a binary."
       atom.notifications.addError "Unable to run binary",
@@ -286,18 +353,14 @@ module.exports=
       @toolBarButtons.BuildAndRunCCode.setEnabled no
       @toolBarButtons.BuildCCode.setEnabled no
       @toolBarButtons.RunCCode.setEnabled no
-      @toolBarButtons.CreateTrace.setEnabled no
       @toolBarButtons.BuildAndRunProject.setEnabled no
-      @toolBarButtons.RunProjectByTrace.setEnabled no
 
 
     enableButtons: ->
       @toolBarButtons.BuildAndRunCCode.setEnabled yes
       @toolBarButtons.BuildCCode.setEnabled yes
       @toolBarButtons.RunCCode.setEnabled yes
-      @toolBarButtons.CreateTrace.setEnabled yes
       @toolBarButtons.BuildAndRunProject.setEnabled yes
-      @toolBarButtons.RunProjectByTrace.setEnabled yes
 
 
     enableStopButton: ->

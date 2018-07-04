@@ -46,6 +46,10 @@
               "command": "tessla2:build-c-code"
             },
             {
+              "label": "Create trace file",
+              "command": "tessla2:create-trace"
+            },
+            {
               "label": "Run C code",
               "command": "tessla2:run-c-code"
             },
@@ -56,6 +60,10 @@
             {
               "label": "Build and Run Project",
               "command": "tessla2:build-and-run-project"
+            },
+            {
+              "label": "Run Project by Trace",
+              "command": "tessla2:run-project-by-trace"
             },
             {
               "label": "Stop current process",

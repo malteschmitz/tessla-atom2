@@ -6,7 +6,7 @@
 'patterns': [
   {
     'comment': 'In-line comments'
-    'match': '\-\-.*'
+    'match': '\\s*\-\-.*'
     'name': 'comment.line.double-dash'
   },
   {

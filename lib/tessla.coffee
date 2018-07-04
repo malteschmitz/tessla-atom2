@@ -11,7 +11,8 @@ SidebarView = require "./sidebar-view"
 OutputView = require "./output-view"
 Controller = require "./controller"
 ViewManager = require "./view-manager"
-{SIDEBAR_VIEW, FORMATTED_OUTPUT_VIEW, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME, TESSLA_REGISTRY} = require "./constants"
+VisualizerView = require "./visualizer-view"
+{SIDEBAR_VIEW, FORMATTED_OUTPUT_VIEW, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME, TESSLA_REGISTRY, VISUALIZER} = require "./constants"
 
 module.exports=
   subscriptions: null
@@ -50,23 +51,30 @@ module.exports=
         "tessla2:build-c-code": => @controller.onBuildCCode buildAssembly: no
         "tessla2:run-c-code": => @controller.onRunBinary {}
         "tessla2:stop-current-process": => @controller.onStopRunningProcess()
+        "tessla2:create-trace": => @controller.onCreateTrace()
         "tessla2:build-and-run-project": => @controller.onCompileAndRunProject()
+        "tessla2:run-project-by-trace": => @controller.onRunProjectByTrace()
         "tessla2:reset-view": => @viewManager.restoreViews()
 
       @subscriptions.add atom.workspace.addOpener (URI) ->
         switch URI
           when SIDEBAR_VIEW          then new SidebarView { title: "Functions", URI: SIDEBAR_VIEW }
           when FORMATTED_OUTPUT_VIEW then new OutputView { title: "Formatted output", URI: FORMATTED_OUTPUT_VIEW }
+          when VISUALIZER            then new VisualizerView { title: "Visualization", URI: VISUALIZER }
 
       @subscriptions.add new Disposable ->
         for item in atom.workspace.getPaneItems()
-          if item instanceof SidebarView or item instanceof OutputView
+          if item instanceof SidebarView or item instanceof OutputView or item instanceof VisualizerView
             item.destroy()
+
+      # show toolbar
+      atom.config.set "tool-bar.visible", yes
 
       # open sidebar items
       Promise.all([
         atom.workspace.open FORMATTED_OUTPUT_VIEW
         atom.workspace.open SIDEBAR_VIEW
+        atom.workspace.open VISUALIZER
       ]).then (views) =>
         viewsContainer = {}
         viewsContainer.unknown = []
@@ -75,6 +83,10 @@ module.exports=
           switch view?.getURI()
             when SIDEBAR_VIEW then viewsContainer.sidebarViews = view
             when FORMATTED_OUTPUT_VIEW then viewsContainer.formattedOutputView = view
+            when VISUALIZER
+              viewsContainer.visualizer = view
+              # display visualizer content
+              view.display()
             else viewsContainer.unknown.push view
 
         # now give created the views to the view manager
@@ -100,6 +112,8 @@ module.exports=
 
 
   deactivate: ->
+    atom.config.set "tool-bar.visible", no
+
     # tear down toolbar
     if @toolbar?
       @toolbar.removeItems()
@@ -218,17 +232,23 @@ module.exports=
   consumeToolBar: (getToolBar) ->
     @toolBar = getToolBar "tessla2"
 
-    @toolBarButtons.BuildAndRunCCode = @toolBar.addButton
-      icon: "play-circle"
-      callback: "tessla2:build-and-run-c-code"
-      tooltip: "Builds and runs C code from project directory"
-      iconset: "fa"
-
     @toolBarButtons.BuildCCode = @toolBar.addButton
       icon: "gear-a"
       callback: "tessla2:build-c-code"
       tooltip: "Builds the C code of this project into a binary"
       iconset: "ion"
+
+    @toolBarButtons.CreateTrace = @toolBar.addButton
+      icon: "code-download"
+      callback: "tessla2:create-trace"
+      tooltip: "Creates the trace frome given the C code"
+      iconset: "ion"
+
+    @toolBarButtons.BuildAndRunCCode = @toolBar.addButton
+      icon: "play-circle"
+      callback: "tessla2:build-and-run-c-code"
+      tooltip: "Builds and runs C code from project directory"
+      iconset: "fa"
 
     @toolBarButtons.RunCCode = @toolBar.addButton
       icon: "play"
@@ -243,6 +263,12 @@ module.exports=
       callback: "tessla2:build-and-run-project"
       tooltip: "Builds and runs C code and analizes runtime behavior"
       iconset: "ion"
+
+    @toolBarButtons.RunProjectByTrace = @toolBar.addButton
+      icon: "forward"
+      callback: "tessla2:run-project-by-trace"
+      tooltip: "Builds and runs C code and analizes runtime behavior"
+      iconset: "fa"
 
     @toolBar.addSpacer()
 
@@ -271,6 +297,9 @@ module.exports=
 
     atom.config.set "tool-bar.iconSize", "16px"
     atom.config.set "tool-bar.position", "Right"
+
+    @toolBar.onDidDestroy () =>
+      @toolBar = null
 
 
   #config:

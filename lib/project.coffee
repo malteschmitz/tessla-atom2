@@ -20,8 +20,9 @@ module.exports=
       else
         @projPath = ""
 
-      cFiles = @getCFiles()
-      tesslaFiles = @getTeSSLaFiles()
+      @cFiles = @getCFiles()
+      @tesslaFiles = @getTeSSLaFiles()
+      @traceFiles = @getTraceFiles()
 
 
     setProjPath: (projPath) ->
@@ -30,6 +31,7 @@ module.exports=
 
       @cFiles = @getCFiles()
       @tesslaFiles = @getTeSSLaFiles()
+      @traceFiles = @getTraceFiles()
 
 
     updateBinName: ->
@@ -44,6 +46,12 @@ module.exports=
 
     getTeSSLaFiles: ->
       files = scanFolder @projPath, ".tessla", yes, @sfConfig
+      files = null if files.length is 0
+      files
+
+
+    getTraceFiles: ->
+      files = scanFolder @projPath, ".trace", yes, @sfConfig
       files = null if files.length is 0
       files
 
@@ -73,3 +81,6 @@ module.exports=
     clear: ->
       @projPath = ""
       @binName = ""
+      @cFiles = null
+      @tesslaFiles = null
+      @traceFiles = null
