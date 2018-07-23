@@ -18,13 +18,14 @@ module.exports=
 
       #iterate over editors
       for editor in atom.workspace.getTextEditors()
-        identifier = path.join editor.getPath(), editor.getTitle()
-        visitedEditors.push identifier
+        if editor isnt null
+          identifier = path.join editor.getPath(), editor.getTitle()
+          visitedEditors.push identifier
 
-        if not (identifier of @markersInEditor)
-          currentMarkersInEditor[identifier] = []
-        else
-          currentMarkersInEditor[identifier] = @markersInEditor[identifier]
+          if not (identifier of @markersInEditor)
+            currentMarkersInEditor[identifier] = []
+          else
+            currentMarkersInEditor[identifier] = @markersInEditor[identifier]
 
       # remove editors that are not needed any anymore
       #for key, value of @markersInEditor

@@ -38,7 +38,6 @@ module.exports=
         # save editors and start compiliation and execution process
         @viewManager.saveEditors()
         # check if the Docker daemon is still running
-        # check if the Docker daemon is still running
         @isDockerDaemonRunning
           # Docker daemon not running
           ifNot: =>
@@ -190,7 +189,6 @@ module.exports=
 
 
     onRunProjectByTrace: () ->
-      console.log("run project by trace file");
       # if there is no current Project stop further execution
       if @viewManager.activeProject.projPath is ""
         @viewManager.showNoProjectNotification()
@@ -481,8 +479,6 @@ module.exports=
         errorCallback.call @, []
         return
 
-      console.log(@viewManager.activeProject.traceFiles);
-
       unless @viewManager.activeProject.traceFiles?
         @viewManager.showNoCompilableTraceFilesNotification()
         errorCallback.call @, []
@@ -729,7 +725,6 @@ module.exports=
       docker.info().then (resolved) =>
         ifYes()
       .catch (rejected) =>
-        console.log "[TeSSLa2][debug]:controller.coffe:408: docker is not running", rejected
         ifNot()
 
 
@@ -796,10 +791,7 @@ module.exports=
     transferFilesToContainer: ->
       fs.emptyDirSync @containerDir
       @viewManager.views.logView.addEntry ["command", "rm -rf #{@containerDir}/*"]
-
       fs.mkdirSync path.join @containerDir, "bin"
       @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
-
       @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]
-
       fs.copySync @viewManager.activeProject.projPath, @containerDir

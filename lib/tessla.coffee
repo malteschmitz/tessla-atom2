@@ -39,9 +39,7 @@ module.exports=
       # try to pull latest repo version of TeSSLa2
       @controller.dockerPullRequest()
 
-      # create view manager
       @subscriptions = new CompositeDisposable
-
       @subscriptions.add atom.commands.add "atom-workspace",
         "tessla2:activate": => @activate()
         "tessla2:deactivate": => @deactivate()
@@ -70,7 +68,7 @@ module.exports=
       # show toolbar
       atom.config.set "tool-bar.visible", yes
 
-      # open sidebar items
+      # open custom dock items
       Promise.all([
         atom.workspace.open FORMATTED_OUTPUT_VIEW
         atom.workspace.open SIDEBAR_VIEW
@@ -81,15 +79,15 @@ module.exports=
 
         for view in views
           switch view?.getURI()
-            when SIDEBAR_VIEW then viewsContainer.sidebarViews = view
-            when FORMATTED_OUTPUT_VIEW then viewsContainer.formattedOutputView = view
+            when SIDEBAR_VIEW           then viewsContainer.sidebarViews = view
+            when FORMATTED_OUTPUT_VIEW  then viewsContainer.formattedOutputView = view
             when VISUALIZER
               viewsContainer.visualizer = view
               # display visualizer content
-              view.display()
+              # view.display()
             else viewsContainer.unknown.push view
 
-        # now give created the views to the view manager
+        # now give created views to the view manager
         @viewManager.connectViews viewsContainer
 
         # give focus to text editors
@@ -97,7 +95,7 @@ module.exports=
 
         # get the right project
         for editor in atom.workspace.getTextEditors()
-          if atom.views.getView(editor).offsetParent? and editor?
+          if editor? and atom.views.getView(editor).offsetParent?
             @viewManager.activeProject.setProjPath path.dirname editor.getPath()
 
         # now everything is done... split text editors into two views
@@ -301,6 +299,49 @@ module.exports=
     @toolBar.onDidDestroy () =>
       @toolBar = null
 
+
+
+  provideLinter: () ->
+    return
+      name: "Example"
+      scope: "file"
+      lintsOnChange: false,
+      grammarScopes: ["tessla"]
+      lint: (textEditor) ->
+        return new Promise (resolve, reject) ->
+          args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
+          command = "docker #{args.join " "}"
+          # get editor path
+          editorPath = textEditor.getPath()
+          # exec command
+          verifier = childProcess.spawn "docker", args
+          # remember errors
+          errors = []
+          # listen to data
+          verifier.stdout.on "data", (data) ->
+            console.log "stdout: " + data.toString()
+          verifier.stderr.on "data", (data) ->
+            for line in data.toString().split("\n")
+              errors.push(line) if line isnt "" and line.substr(0, 5) is "Error"
+          verifier.on "close", () ->
+            # get an array of items
+            items = []
+            # regex
+            regex = /^(Error|Warning)\s*:\s*([\w][\w\.]*)\s*\(([\d]+)+\s*,\s*([\d]+)\s*-\s*([\d]+)\s*,\s*([\d]+)\)\s*:([\w\s]*)$/gm
+            # parse messages
+            for error in errors
+              while matches = regex.exec(error)
+                console.log(matches)
+                items.push(
+                    severity: "error"
+                    location:
+                      file: editorPath
+                      position: [[matches[3] - 1, matches[4] - 1], [matches[5] - 1, matches[6] - 1]]
+                    excerpt: matches[7]
+                    description: "### What is this?\nThis is a randomly generated value"
+                )
+            # Do something sync
+            resolve items
 
   #config:
     # animationSpeed:

@@ -44,8 +44,16 @@
       }
     }
   },
+  "providedServices": {
+    "linter": {
+      "versions": {
+        "2.0.0": "provideLinter"
+      }
+    }
+  },
   "package-deps": [
     "tool-bar",
-    "flexible-panels"
+    "flexible-panels",
+    "linter"
   ]
 }
