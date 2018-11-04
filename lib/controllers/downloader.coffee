@@ -1,7 +1,7 @@
 Docker = require "dockerode"
 docker = new Docker
 
-{TESSLA_REGISTRY} = require "./constants"
+{TESSLA_REGISTRY} = require "../utils/constants"
 
 module.exports=
   class Downloader

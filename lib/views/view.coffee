@@ -1,7 +1,7 @@
-Project = require "./project"
-MessageQueue = require "./message-queue"
+Project = require "./utils/project"
+MessageQueue = require "../utils/message-queue"
 
-{ SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "./constants"
+{ SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "../utils/constants"
 
 module.exports=
   class View

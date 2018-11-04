@@ -6,7 +6,7 @@
 'patterns': [
   {
     'comment': 'In-line comments'
-    'match': '\\s*\-\-.*'
+    'match': '\\s*#.*'
     'name': 'comment.line.double-dash'
   },
   {
@@ -16,7 +16,7 @@
   },
   {
     'comment': 'Keywords'
-    'match': '\\b(if|then|else)\\b'
+    'match': '\\b(if|then|else|include)\\b'
     'name': 'keyword.control'
   },
   {

@@ -2,17 +2,19 @@
 packageDeps = require "atom-package-deps"
 path = require "path"
 os = require "os"
-fs = require "fs"
+fs = require "fs-extra"
 childProcess = require "child_process"
 Docker = require "dockerode"
 docker = new Docker
 
-SidebarView = require "./sidebar-view"
-OutputView = require "./output-view"
-Controller = require "./controller"
-ViewManager = require "./view-manager"
-VisualizerView = require "./visualizer-view"
-{SIDEBAR_VIEW, FORMATTED_OUTPUT_VIEW, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME, TESSLA_REGISTRY, VISUALIZER} = require "./constants"
+SidebarView = require "./views/sidebar-view"
+OutputView = require "./views/output-view"
+Controller = require "./controllers/controller"
+ViewManager = require "./views/view-manager"
+VisualizerView = require "./views/visualizer-view"
+{SIDEBAR_VIEW, FORMATTED_OUTPUT_VIEW, TESSLA_IMAGE_NAME, TESSLA_CONTAINER_NAME, TESSLA_REGISTRY, VISUALIZER} = require "./utils/constants"
+{isSet} = require "./utils/utils"
+TeSSLaProvider = require "./autocomplete/tessla-provider"
 
 module.exports=
   subscriptions: null
@@ -72,7 +74,7 @@ module.exports=
       Promise.all([
         atom.workspace.open FORMATTED_OUTPUT_VIEW
         atom.workspace.open SIDEBAR_VIEW
-        atom.workspace.open VISUALIZER
+        # atom.workspace.open VISUALIZER
       ]).then (views) =>
         viewsContainer = {}
         viewsContainer.unknown = []
@@ -93,11 +95,6 @@ module.exports=
         # give focus to text editors
         atom.workspace.getCenter().activate()
 
-        # get the right project
-        for editor in atom.workspace.getTextEditors()
-          if editor? and atom.views.getView(editor).offsetParent?
-            @viewManager.activeProject.setProjPath path.dirname editor.getPath()
-
         # now everything is done... split text editors into two views
         @viewManager.setUpSplitView()
 
@@ -110,7 +107,8 @@ module.exports=
 
 
   deactivate: ->
-    atom.config.set "tool-bar.visible", no
+    atom.config.set("tool-bar.visible", no)
+    @controller.dispose()
 
     # tear down toolbar
     if @toolbar?
@@ -301,47 +299,71 @@ module.exports=
 
 
 
-  provideLinter: () ->
+  provideLinter: () =>
     return
       name: "Example"
       scope: "file"
       lintsOnChange: false,
       grammarScopes: ["tessla"]
-      lint: (textEditor) ->
-        return new Promise (resolve, reject) ->
+      lint: (textEditor) =>
+        return new Promise (resolve, reject) =>
+          if not isSet(textEditor) or not isSet(textEditor.getPath())
+            return
+
+          fs.copySync(textEditor.getPath(), path.join(os.homedir(), ".tessla-env", textEditor.getTitle()))
+
           args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
           command = "docker #{args.join " "}"
-          # get editor path
+
           editorPath = textEditor.getPath()
-          # exec command
-          verifier = childProcess.spawn "docker", args
-          # remember errors
+          verifier = childProcess.spawn("docker", args)
+
           errors = []
-          # listen to data
+          warnings = []
+
           verifier.stdout.on "data", (data) ->
             console.log "stdout: " + data.toString()
           verifier.stderr.on "data", (data) ->
+            console.log(data.toString());
             for line in data.toString().split("\n")
-              errors.push(line) if line isnt "" and line.substr(0, 5) is "Error"
+              lineIsError = line.substr(0, 5) is "Error"
+              lineIsWarning = line.substr(0, 7) is "Warning"
+              errors.push(line) if line isnt "" and lineIsError
+              warnings.push(line) if line isnt "" and lineIsWarning
           verifier.on "close", () ->
+            console.log("closed verifier")
+            console.log(errors)
             # get an array of items
             items = []
             # regex
             regex = /^(Error|Warning)\s*:\s*([\w][\w\.]*)\s*\(([\d]+)+\s*,\s*([\d]+)\s*-\s*([\d]+)\s*,\s*([\d]+)\)\s*:([\w\s]*)$/gm
-            # parse messages
+            # parse error messages
             for error in errors
               while matches = regex.exec(error)
-                console.log(matches)
                 items.push(
                     severity: "error"
                     location:
                       file: editorPath
                       position: [[matches[3] - 1, matches[4] - 1], [matches[5] - 1, matches[6] - 1]]
                     excerpt: matches[7]
-                    description: "### What is this?\nThis is a randomly generated value"
+                    description: ""
+                )
+            # parse warning messages
+            for warning in warnings
+              while matches = regex.exec(warning)
+                items.push(
+                    severity: "warning"
+                    location:
+                      file: editorPath
+                      position: [[matches[3] - 1, matches[4] - 1], [matches[5] - 1, matches[6] - 1]]
+                    excerpt: matches[7]
+                    description: ""
                 )
             # Do something sync
-            resolve items
+            resolve(items)
+
+  provideAutocomplete: () =>
+    return new TeSSLaProvider
 
   #config:
     # animationSpeed:

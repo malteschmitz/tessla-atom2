@@ -1,6 +1,6 @@
 
 SidebarViewElement = require "./sidebar-view-element"
-FileManager = require "./file-manager"
+FileManager = require "../controllers/file-manager"
 
 module.exports=
   class SidebarView

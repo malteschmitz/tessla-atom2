@@ -1,5 +1,6 @@
-{SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "./constants"
-Project = require "./project"
+{ CompositeDisposable, Disposable } = require "atom"
+{SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "../utils/constants"
+Project = require "../utils/project"
 
 module.exports=
   class ViewManager
@@ -7,29 +8,23 @@ module.exports=
     constructor: ->
       @views = {}
       @toolBarButtons = {}
-
-      @tesslaMarkers = []
-      @tesslaUnsedFunctionMarkers = []
-      @tesslaTooltipDecorations = []
-
+      @subscriptions = new CompositeDisposable
       @activeProject = new Project
 
       atom.workspace.onDidDestroyPaneItem @onDestroyedView
-      atom.workspace.onDidStopChangingActivePaneItem (item) =>
-        if atom.workspace.isTextEditor item
-          @onFileChanged item.getPath()
-        else
-          @onNoOpenFile()
-
       atom.workspace.onDidAddTextEditor (event) =>
         @onFileSavedOrAdded event.textEditor.getPath()
-
       atom.workspace.observeTextEditors (editor) =>
         editor.onDidSave (event) =>
           @onFileSavedOrAdded event.path
-
         editor.onDidStopChanging (event) =>
           @views.sidebarViews?.update @activeProject
+
+      @subscriptions.add(
+        new Disposable(=>
+          @activeProject.dispose()
+        )
+      )
 
 
     connectBtns: (btns) ->
@@ -106,53 +101,29 @@ module.exports=
 
     setUpSplitView: ->
       # console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
-      unless @activeProject.cFiles or @activeProject.tesslaFiles
-        @showNotSetUpSplitViewNotification()
-        return
-
-      atom.workspace.getTextEditors().forEach (editor) ->
-        editor.destroy()
-
-      atom.workspace.getPanes()[0].splitRight()
-
-      @activeProject.cFiles.forEach (file) ->
-        atom.workspace.open file,
-          split: "left"
-
-      @activeProject.tesslaFiles.forEach (file) ->
-        atom.workspace.open(file, { split: "right" }).then (editor) ->
-          editor.addGutter
-            name: "tessla-error-gutter"
-            priority: 1000
-            visible: yes
+      # unless @activeProject.cFiles or @activeProject.tesslaFiles
+      #   @showNotSetUpSplitViewNotification()
+      #   return
+      #
+      # atom.workspace.getTextEditors().forEach (editor) ->
+      #   editor.destroy()
+      #
+      # atom.workspace.getPanes()[0].splitRight()
+      #
+      # @activeProject.cFiles.forEach (file) ->
+      #   atom.workspace.open file,
+      #     split: "left"
+      #
+      # @activeProject.tesslaFiles.forEach (file) ->
+      #   atom.workspace.open(file, { split: "right" }).then (editor) ->
+      #     editor.addGutter
+      #       name: "tessla-error-gutter"
+      #       priority: 1000
+      #       visible: yes
 
 
     onFileSavedOrAdded: (file) ->
-      newProjectPath = atom.project.relativizePath(file)[0]
-
-      if newProjectPath isnt @activeProject.projPath
-        @activeProject.setProjPath newProjectPath
-        @activeProject.setUpProjectStructure()
-
-      else
-        @views.sidebarViews?.update @activeProject
-
-
-    onFileChanged: (file) ->
-      # console.log "[TeSSLa2][debug] view-manager.coffee:141: Changed file.", file
-      return unless file?
-
-      newProjectPath = atom.project.relativizePath(file)[0]
-      #console.log file, newProjectPath
-      #console.log "[TeSSLa2][debug] view-manager.coffee:141: Change project directory ...", newProjectPath
-
-      unless newProjectPath is @activeProject.projPath
-        @activeProject.setProjPath newProjectPath
-        @activeProject.setUpProjectStructure()
-        @views.sidebarViews?.update @activeProject
-
-      # console.log "[TeSSLa2][debug] view-manager.coffee:153: New project ...", @activeProject
-
+      @views.sidebarViews?.update @activeProject
 
     showNoProjectNotification: ->
       message = "There is no active project in your workspace. Open and activate at least one file of the project you want to compile and run in your workspace."
@@ -215,71 +186,12 @@ module.exports=
         detail: message
       @views.consoleView.addEntry [message]
 
-
-    highlightTeSSLaError: ({ error, file }) ->
-      regex = /\b(ParserError)\(\(([\s,0-9-]+)\):\s(.*)\)/g
-      match = regex.exec error
-
-      if match?
-        @tesslaMarkers.forEach (marker) -> marker.destroy()
-        @tesslaMarkers = []
-        @tesslaTooltipDecorations = []
-
-        location = match[2]
-        text = match[3]
-
-        workspace.open file,
-          split: "right"
-          searchAllPanes: yes
-        .then (editor) =>
-          start = (location.split(" - ")[0]).split ","
-          start = new Point start[0] - 1, start[1] - 1
-
-          end = (location.split(" - ")[1]).split ","
-          end = new Point end[0] - 1, end[1] - 1
-
-          editor.setCursorBufferPosition start
-          editor.scrollToCursorPosition()
-
-          range = new Range start, end
-          marker = editor.markBufferRange range
-
-          @tesslaMarkers.push marker
-
-          editor.decorateMarker marker,
-            type: "highlight"
-            class: "tessla-syntax-error"
-
-          tt = document.createElement "div"
-          ttLabel = document.createElement "span"
-          ttText = document.createElement "span"
-
-          ttLabel.textContent = "error"
-          ttText.textContent = text
-
-          ttLabel.classList.add "error-label"
-          tt.appendChild ttLabel
-          tt.appendChild ttText
-
-          tooltip = editor.decorateMarker marker,
-            type: "overlay"
-            class: "tessla-syntax-tooltip"
-            item: tt
-            position: "tail"
-
-          @tesslaTooltipDecorations.push tooltip
-
-          gutter = editor.gutterWithName "tessla-error-gutter"
-
-          unless gutter?
-            gutter = editor.addGutter
-              name: "tessla-error-gutter"
-              priority: 1000
-              visible: yes
-
-          gutter.decorateMarker marker,
-            type: "gutter"
-            class: "tessla-syntax-dot"
+    showNoTargetsSpecified: ->
+      message = "There are no targets specified that contain compilation information"
+      atom.notifications.addError("Unable to find targets",
+        detail: message
+      )
+      @views.logView.addEntry([message])
 
 
     disableButtons: ->
@@ -316,7 +228,7 @@ module.exports=
         editor.save() unless editor?.getPath()? is @activeProject.projPath
 
       activeEditor?.save()
-      @activeProject.setProjPath currentProjPath
+
 
     showIndeterminateProgress: (title, text, dismissable=yes) ->
       # show notification to user that a pull request will start that may take
@@ -341,3 +253,6 @@ module.exports=
 
       # return the notification object back
       return notification
+
+    dispose: =>
+      @subscriptions.dispose()

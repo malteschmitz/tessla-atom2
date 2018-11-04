@@ -1,5 +1,5 @@
 
-{ VISUALIZER } = require "./constants"
+{ VISUALIZER } = require "../utils/constants"
 { visualizer } = require "tessla-visualizer"
 
 module.exports=
