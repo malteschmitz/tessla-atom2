@@ -310,10 +310,16 @@ module.exports=
           if not isSet(textEditor) or not isSet(textEditor.getPath())
             return
 
-          fs.copySync(textEditor.getPath(), path.join(os.homedir(), ".tessla-env", textEditor.getTitle()))
+          containerDir = path.join(os.homedir(), ".tessla-env")
+          stdlibTessla = path.join(path.dirname(textEditor.getPath()), "stdlib.tessla")
+
+          fs.copySync(textEditor.getPath(), path.join(containerDir, textEditor.getTitle()))
+          if fs.existsSync(stdlibTessla)
+            fs.copySync(stdlibTessla, path.join(containerDir, "stdlib.tessla"))
 
           args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
           command = "docker #{args.join " "}"
+          # console.log(command)
 
           editorPath = textEditor.getPath()
           verifier = childProcess.spawn("docker", args)
@@ -331,12 +337,12 @@ module.exports=
               errors.push(line) if line isnt "" and lineIsError
               warnings.push(line) if line isnt "" and lineIsWarning
           verifier.on "close", () ->
-            console.log("closed verifier")
-            console.log(errors)
+            # console.log("closed verifier")
+            # console.log(errors)
             # get an array of items
             items = []
             # regex
-            regex = /^(Error|Warning)\s*:\s*([\w][\w\.]*)\s*\(([\d]+)+\s*,\s*([\d]+)\s*-\s*([\d]+)\s*,\s*([\d]+)\)\s*:([\w\s]*)$/gm
+            regex = /(Error|Warning)\s*:\s*(\w[\w\.]*)\s*\(([\d]+)+\s*,\s*([\d]+)\s*-\s*([\d]+)\s*,\s*([\d]+)\)\s*:([\w\s]*)/gm
             # parse error messages
             for error in errors
               while matches = regex.exec(error)

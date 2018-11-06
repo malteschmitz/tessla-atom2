@@ -29,8 +29,9 @@ module.exports=
         atom.workspace.onDidChangeActivePaneItem((item) =>
           if item instanceof TextEditor
             @setPath(getProjectPath(item.getPath()))
-          else
-            @setPath(null)
+          # else
+          #   console.log(item)
+          #   @setPath(null)
         )
       )
 
@@ -64,8 +65,8 @@ module.exports=
           fileContent = {
             "target.main": {
               active: yes,
-              tessla: [ "spec.tessla" ],
-              input: [ "trace.input" ],
+              tessla: "spec.tessla",
+              input: "trace.input",
             }
           }
           fs.writeFileSync(path.join(@path, ".targets.yml"), YAML.stringify(fileContent), { flag: "wx" })
@@ -95,13 +96,11 @@ module.exports=
 
     getTarget: =>
       activeTarget = null
-      console.log(@targets)
       for k, v of @targets
         if v.active is yes
           activeTarget = v
       if activeTarget is null && @targets isnt null
         activeTarget = @targets[Object.keys(@targets)[0]]
-      console.log(activeTarget)
       return activeTarget
 
     getPath: =>

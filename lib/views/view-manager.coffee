@@ -1,6 +1,8 @@
 { CompositeDisposable, Disposable } = require "atom"
 {SIDEBAR_VIEW, OUTPUT_VIEW, FORMATTED_OUTPUT_VIEW } = require "../utils/constants"
 Project = require "../utils/project"
+scanFolder = require("scan-folder")
+path = require("path")
 
 module.exports=
   class ViewManager
@@ -100,26 +102,30 @@ module.exports=
 
 
     setUpSplitView: ->
-      # console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
-      # unless @activeProject.cFiles or @activeProject.tesslaFiles
-      #   @showNotSetUpSplitViewNotification()
-      #   return
-      #
+      console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
+
+      projPath = @activeProject.getPath()
+      allow = { dotfolders: yes, dotfiles: yes, modules: yes }
+      cFiles = scanFolder(@activeProject.getPath(), ".c", yes, allow)
+      tesslaFiles = scanFolder(@activeProject.getPath(), ".tessla", yes, allow)
+
+      if cFiles is null or cFiles is undefined or cFiles.length is 0 or tesslaFiles is null or tesslaFiles is undefined or tesslaFiles.length is 0
+        @showNotSetUpSplitViewNotification()
+        return
+
       # atom.workspace.getTextEditors().forEach (editor) ->
       #   editor.destroy()
-      #
-      # atom.workspace.getPanes()[0].splitRight()
-      #
-      # @activeProject.cFiles.forEach (file) ->
-      #   atom.workspace.open file,
-      #     split: "left"
-      #
-      # @activeProject.tesslaFiles.forEach (file) ->
-      #   atom.workspace.open(file, { split: "right" }).then (editor) ->
-      #     editor.addGutter
-      #       name: "tessla-error-gutter"
-      #       priority: 1000
-      #       visible: yes
+
+      atom.workspace.getActivePane().destroyItems()
+      atom.workspace.getPanes()[0].splitRight()
+
+      console.log(cFiles)
+      console.log(tesslaFiles)
+
+      for file in cFiles
+        atom.workspace.open(file, { split: "left" })
+      for file in tesslaFiles
+        atom.workspace.open(file, { split: "right" })
 
 
     onFileSavedOrAdded: (file) ->

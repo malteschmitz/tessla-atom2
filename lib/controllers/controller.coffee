@@ -582,13 +582,15 @@ module.exports=
       successCallback = if onSuccess isnt null and onSuccess isnt undefined then onSuccess else () -> {}
       errorCallback = if onError isnt null and onError isnt undefined then onError else () -> {}
 
-      if @viewManager.activeProject.projPath is ""
+      if @viewManager.activeProject.getPath() is null
         @viewManager.showNoProjectNotification()
         errorCallback.call @, []
         return
       console.log "Controller.onDoRV: check if project is set..."
 
-      if @viewManager.activeProject.targets["target.main"] is null or @viewManager.activeProject.targets["target.main"] is undefined
+      target = @viewManager.activeProject.getTarget()
+
+      if target is null or target is undefined
         @viewManager.views.logView.addEntry ["message", "No targets for compilation found. Provide at least \"target.main\" in \".\""]
         errorCallback.call @, ["No targets for compilation found. Provide at least \"target.main\" in \".\""]
         return
@@ -613,25 +615,18 @@ module.exports=
         console.log "Controller.onDoRV: transfered files to docker mount directory..."
         console.log "Controller.onDoRV: get files for compilation process"
 
-        files = []
-        input = @viewManager.activeProject.targets["target.main"]
-        console.log input
-        if input isnt undefined
-          for k, v in input
-            console.log v
-            # files.push path.relative @viewManager.activeProject.projPath, path.join @viewManager.activeProject.projPath, file
-        console.log files
-        return
+        console.log(target)
+        if target.tessla is null or target.tessla is undefined
+          notification.dismiss()
+          @viewManager.views.logView.addEntry(["message", "No tessla file specified"])
+          return
 
-        # try
-        #   cFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.cFiles[0]
-        #   tsslFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.tesslaFiles[0]
-        # catch error
-        #   console.log @viewManager.activeProject.projPath
-        #   console.log @viewManager.activeProject.cFiles[0]
-        #   console.log error
+        if target.c is null or target.c is undefined or target.c.length is 0
+          notification.dismiss()
+          @viewManager.views.logView.addEntry(["message", "No c files for verification specified"])
+          return
 
-        args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{cFile}", "#{tsslFile}"]
+        args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{target.c[0]}", "#{target.tessla}"]
 
         @runningProcess = childProcess.spawn "docker", args
 
@@ -830,22 +825,23 @@ module.exports=
     transferFilesToContainer: (callback) ->
       fs.emptyDir @containerDir, =>
         @viewManager.views.logView.addEntry ["command", "rm -rf #{@containerDir}/*"]
-        fs.mkdir path.join(@containerDir, "bin"), =>
+        fs.mkdir path.join(@containerBuild), =>
           @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
-          @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.projPath}/* #{@containerDir}/"]
+          @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.getPath()}/* #{@containerDir}/"]
           filesToTransfer = []
           transferedFiles = []
           target = @viewManager.activeProject.getTarget()
           if not isSet(target)
             return
           if isSet(target.tessla)
-            for file in target.tessla
-              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), file))
-              transferedFiles.push(path.join(@containerDir, file))
+            filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.tessla))
+            transferedFiles.push(path.join(@containerDir, target.tessla))
+            if fs.existsSync(@viewManager.activeProject.getPath(), "stdlib.tessla")
+              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), "stdlib.tessla"))
+              transferedFiles.push(path.join(@containerBuild, "stdlib.tessla"))
           if isSet(target.input)
-            for file in target.input
-              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), file))
-              transferedFiles.push(path.join(@containerDir, file))
+            filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.input))
+            transferedFiles.push(path.join(@containerDir, target.input))
           if isSet(target.c)
             for file in target.c
               filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), file))
