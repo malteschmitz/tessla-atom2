@@ -28,6 +28,10 @@ module.exports=
         )
       )
 
+      @activeProject.on("project-dir-changed", =>
+        @views.sidebarViews.update(@activeProject)
+      )
+
 
     connectBtns: (btns) ->
       @toolBarButtons = btns
@@ -102,7 +106,7 @@ module.exports=
 
 
     setUpSplitView: ->
-      console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
+      # console.log "[TeSSLa2][debug] view-manager.coffee:107: Set up split view.", @activeProject
 
       projPath = @activeProject.getPath()
       allow = { dotfolders: yes, dotfiles: yes, modules: yes }
@@ -113,20 +117,26 @@ module.exports=
         @showNotSetUpSplitViewNotification()
         return
 
-      # atom.workspace.getTextEditors().forEach (editor) ->
-      #   editor.destroy()
+      for item in atom.workspace.getCenter().getPaneItems()
+        item.destroy()
 
-      atom.workspace.getActivePane().destroyItems()
-      atom.workspace.getPanes()[0].splitRight()
+      # create split view
+      # console.log(cFiles)
+      # console.log(tesslaFiles)
 
-      console.log(cFiles)
-      console.log(tesslaFiles)
+      chain = atom.workspace.open(cFiles[0], { split: "left" })
+      chain = chain.then(() => atom.workspace.open(tesslaFiles[0], { split: "right" }))
+      chain.then(() =>
+        # open other c files
+        for file in cFiles
+          atom.workspace.open(file, { split: "left", location: "center" })
+        # open other tessla files
+        for i in [1...tesslaFiles.length]
+          file = tesslaFiles[i]
+          atom.workspace.open(file, { split: "right" })
+      )
 
-      for file in cFiles
-        atom.workspace.open(file, { split: "left" })
-      for file in tesslaFiles
-        atom.workspace.open(file, { split: "right" })
-
+      # console.log(chain)
 
     onFileSavedOrAdded: (file) ->
       @views.sidebarViews?.update @activeProject
@@ -174,7 +184,7 @@ module.exports=
 
 
     showSuccessfullyInstrumentedNotification: ->
-      message = "Verification of project files successfully finished."
+      message = "Verification of project files successfully completed."
       atom.notifications.addSuccess message
       @views.logView.addEntry ["message", message]
 
@@ -203,19 +213,19 @@ module.exports=
     disableButtons: ->
       @toolBarButtons.BuildAndRunCCode.setEnabled no
       @toolBarButtons.BuildCCode.setEnabled no
-      @toolBarButtons.RunCCode.setEnabled no
+      # @toolBarButtons.RunCCode.setEnabled no
       @toolBarButtons.CreateTrace.setEnabled no
       @toolBarButtons.BuildAndRunProject.setEnabled no
-      @toolBarButtons.RunProjectByTrace.setEnabled no
+      # @toolBarButtons.RunProjectByTrace.setEnabled no
 
 
     enableButtons: ->
       @toolBarButtons.BuildAndRunCCode.setEnabled yes
       @toolBarButtons.BuildCCode.setEnabled yes
-      @toolBarButtons.RunCCode.setEnabled yes
+      # @toolBarButtons.RunCCode.setEnabled yes
       @toolBarButtons.CreateTrace.setEnabled yes
       @toolBarButtons.BuildAndRunProject.setEnabled yes
-      @toolBarButtons.RunProjectByTrace.setEnabled yes
+      # @toolBarButtons.RunProjectByTrace.setEnabled yes
 
 
     enableStopButton: ->

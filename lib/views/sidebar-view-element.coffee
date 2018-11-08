@@ -45,7 +45,7 @@ module.exports=
       addBtn.addEventListener "click", (event) =>
         @onAddTest
           functionName: name
-          projectPath: v.activeProject.projPath
+          projectPath: v.activeProject.getPath()
         , event
 
 
@@ -70,8 +70,8 @@ module.exports=
       atom.workspace.open(tesslaFile, { split: "right", searchAllPanes: yes }).then (editor) ->
         editor.setCursorBufferPosition [editor.getLineCount(), 0]
 
-        text  = "\n--Inserted test case automatically in the first tessla file that was found"
-        text += "\ndefine calls_#{functionName} : Events<Unit> := function_calls(\"#{functionName}\")"
+        text  = "\n# Inserted test case automatically in the first tessla file that was found"
+        text += "\ndef calls_#{functionName} : Events[Unit] := function_calls(\"#{functionName}\")"
 
         editor.save() if editor.insertText text, { select: yes, autoIndent: yes }
 

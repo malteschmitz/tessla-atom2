@@ -34,6 +34,7 @@ module.exports=
         )
       )
 
+
     findSymbolsFromFile: (source, name) =>
       suggestions = []
       regex = /((?:#.*\s+)*)(?:@.+\s+)?^(?:def|in)\s+(\w[\d\w_]*)/gm
@@ -45,6 +46,7 @@ module.exports=
         if symbol.startsWith(name)
           suggestions.push({ text: symbol, type: "variable", description: comment })
       return suggestions
+
 
     findSymbolsFromLib: (source, name) =>
       suggestions = []
@@ -58,17 +60,17 @@ module.exports=
         comment = result[1].split("#").join(" ").replace(/ +(?= )/g, "").trim()
         signature = result[2]
         symbol = result[3]
-        params = result[4].replace(" ", "").split(",")
+        params = result[4].replace(/\s/g, "").split(",")
         if symbol.startsWith(name)
           args = []
           i = 1;
           for param in params
             if param.indexOf(":") >= 0
-              args.push("${#{i++}:#{param.split(":")[0]}}")
+              args.push("${#{i++}:#{param.replace(":", ": ")}}")
           suggestions.push({
             text: symbol,
             displayText: signature,
-            snippet: "#{symbol}(#{args.join(",")})",
+            snippet: "#{symbol}(#{args.join(", ")})",
             type: "function",
             description: comment
           })

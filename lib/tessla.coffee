@@ -18,7 +18,6 @@ TeSSLaProvider = require "./autocomplete/tessla-provider"
 
 module.exports=
   subscriptions: null
-  activeProject: null
   toolbar: null
   viewManager: null
   controller: null
@@ -26,8 +25,13 @@ module.exports=
   flexiblePanelsManager: null
   containerDir: ""
   hide: yes
+  alreadyActivated: no
 
   activate: ->
+    if @alreadyActivated
+      return
+    @alreadyActivated = yes
+
     #init instance variables
     @viewManager = new ViewManager
     @containerDir = path.join os.homedir(), ".tessla-env"
@@ -53,7 +57,6 @@ module.exports=
         "tessla2:stop-current-process": => @controller.onStopRunningProcess()
         "tessla2:create-trace": => @controller.onCreateTrace()
         "tessla2:build-and-run-project": => @controller.onCompileAndRunProject()
-        "tessla2:run-project-by-trace": => @controller.onRunProjectByTrace()
         "tessla2:reset-view": => @viewManager.restoreViews()
 
       @subscriptions.add atom.workspace.addOpener (URI) ->
@@ -108,6 +111,7 @@ module.exports=
 
   deactivate: ->
     atom.config.set("tool-bar.visible", no)
+    @alreadyActivated = no
     @controller.dispose()
 
     # tear down toolbar
@@ -122,8 +126,7 @@ module.exports=
     @flexiblePanelsManager.destroy() if @flexiblePanelsManager?
 
     # stop using docker container
-    console.log "docker rm -f #{TESSLA_CONTAINER_NAME}"
-    childProcess.spawnSync "docker", ["rm", "-f", TESSLA_CONTAINER_NAME]
+    try childProcess.execSync("docker rm -f #{TESSLA_CONTAINER_NAME}") catch e then console.log(e)
 
 
   toggle: ->
@@ -246,11 +249,11 @@ module.exports=
       tooltip: "Builds and runs C code from project directory"
       iconset: "fa"
 
-    @toolBarButtons.RunCCode = @toolBar.addButton
-      icon: "play"
-      callback: "tessla2:run-c-code"
-      tooltip: "Runs the binaray compiled from C code"
-      iconset: "ion"
+    # @toolBarButtons.RunCCode = @toolBar.addButton
+    #   icon: "play"
+    #   callback: "tessla2:run-c-code"
+    #   tooltip: "Runs the binaray compiled from C code"
+    #   iconset: "ion"
 
     @toolBar.addSpacer()
 
@@ -259,12 +262,6 @@ module.exports=
       callback: "tessla2:build-and-run-project"
       tooltip: "Builds and runs C code and analizes runtime behavior"
       iconset: "ion"
-
-    @toolBarButtons.RunProjectByTrace = @toolBar.addButton
-      icon: "forward"
-      callback: "tessla2:run-project-by-trace"
-      tooltip: "Builds and runs C code and analizes runtime behavior"
-      iconset: "fa"
 
     @toolBar.addSpacer()
 

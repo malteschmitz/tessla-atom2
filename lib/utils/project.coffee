@@ -6,9 +6,10 @@ path = require("path")
 fileSystem = require("fs")
 childProcess = require("child_process")
 YAML = require("yaml")
+EventEmitter = require("events")
 
 module.exports=
-  class Project
+  class Project extends EventEmitter
     constructor: ->
       @path = null
       @targets = null
@@ -59,23 +60,45 @@ module.exports=
 
     checkTargetsYAML: =>
       return new Promise((resolve, reject) =>
-        if fs.existsSync(path.join(@path, ".targets.yml"))
+        if fs.existsSync(path.join(@path, "targets.yml"))
           resolve()
         else
+          fs.writeFileSync(
+            path.join(@path, "targets.yml"),
+            "# The \"active\" key specifies the the files which should be considered during compiliation.\n" +
+            "# The files are split grouped by type where \"tessla\" contains a single spec file written\n" +
+            "# in TeSSLa. The \"input\" key contains a single trace file which substitutes a whole c\n" +
+            "# programm. The key \"c\" contains a list of c files which should be verified by the TeSSLa\n" +
+            "# spec.\n" +
+            "#\n" +
+            "# The \"targets\" key specifies the different file constellations. You can specify as much\n" +
+            "# such constallations as you wish. To switch the considered configuration just change\n" +
+            "# the \"active\" key to match the target you wish.\n\n",
+            { flag: "wx" }
+          )
           fileContent = {
-            "target.main": {
-              active: yes,
-              tessla: "spec.tessla",
-              input: "trace.input",
+            "active": "main",
+            "targets": {
+              "main": {
+                tessla: "spec.tessla",
+                input: "trace.input"
+              },
+              "debug": {
+                tessla: "spec.tessla",
+                c: [
+                  "file_1.c",
+                  "file_2.c"
+                ]
+              }
             }
           }
-          fs.writeFileSync(path.join(@path, ".targets.yml"), YAML.stringify(fileContent), { flag: "wx" })
+          fs.writeFileSync(path.join(@path, "targets.yml"), YAML.stringify(fileContent), { flag: "a" })
           resolve()
       )
 
     parseTargets: =>
       return new Promise((resolve, reject) =>
-        file = fs.readFileSync(path.join(@path, ".targets.yml"), "utf8")
+        file = fs.readFileSync(path.join(@path, "targets.yml"), "utf8")
         @targets = YAML.parse(file)
         resolve()
       )
@@ -84,23 +107,31 @@ module.exports=
       if not isSet(projPath)
         @path = null
       else if projPath isnt @path
-        console.log("changed project to path:", projPath)
         @path = projPath
         @checkGCCLinterConfig()
         .then(@checkTargetsYAML)
         .then(@parseTargets)
+        .then(=>
+          @emit("project-dir-changed")
+        )
         .catch((err) =>
           console.log("error while project structure setup")
           console.log(err)
         )
 
     getTarget: =>
+      file = fs.readFileSync(path.join(@path, "targets.yml"), "utf8")
+      @targets = YAML.parse(file)
+      if @targets.active is null && @targets.targets isnt null
+        return activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
+      if @targets.targets is null or @targets.targets.length is 0
+        return null
       activeTarget = null
-      for k, v of @targets
-        if v.active is yes
+      for k, v of @targets.targets
+        if @targets.active is k
           activeTarget = v
-      if activeTarget is null && @targets isnt null
-        activeTarget = @targets[Object.keys(@targets)[0]]
+      if activeTarget is null
+        activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
       return activeTarget
 
     getPath: =>

@@ -2,6 +2,8 @@
 SidebarViewElement = require "./sidebar-view-element"
 FileManager = require "../controllers/file-manager"
 
+path = require("path")
+
 module.exports=
   class SidebarView
 
@@ -82,8 +84,13 @@ module.exports=
       @element.remove()
 
     update: (activeProject) ->
-      cFiles = activeProject.cFiles
-      tFiles = activeProject.tesslaFiles
+      if activeProject is null or activeProject.getPath() is null
+        return
+
+      target = activeProject.getTarget()
+
+      cFiles = target.c
+      tesslaFile = target.tessla
 
       @clearEntries()
 
@@ -95,8 +102,8 @@ module.exports=
 
       cFiles.forEach (file) ->
         FileManager.collectCFunctionsFromSourceFile
-          sourceFile: file
-          projectPath: activeProject.projPath
+          sourceFile: path.join(activeProject.getPath(), file)
+          projectPath: activeProject.getPath()
         .forEach (func) ->
           list.push func
 
@@ -104,22 +111,21 @@ module.exports=
         cFile.observed = no
         cFile.exists = yes
 
-      tFiles.forEach (file) ->
-        FileManager.collectCFunctionsFromSourceFile
-          sourceFile: file
-          projectPath: activeProject.projPath
-        .forEach (func) ->
-          definedInCFiles = no
+      FileManager.collectCFunctionsFromSourceFile
+        sourceFile: path.join(activeProject.getPath(), tesslaFile)
+        projectPath: activeProject.getPath()
+      .forEach (func) ->
+        definedInCFiles = no
 
-          list.forEach (listFunc) ->
-            if listFunc.functionName is func.functionName
-              definedInCFiles = yes
-              listFunc.observed = yes
+        list.forEach (listFunc) ->
+          if listFunc.functionName is func.functionName
+            definedInCFiles = yes
+            listFunc.observed = yes
 
-          unless definedInCFiles
-            func.exists = no
-            func.observed = no
-            list.push func
+        unless definedInCFiles
+          func.exists = no
+          func.observed = no
+          list.push func
 
       list.sort (a, b) -> a.functionName.localeCompare b.functionName
       list.forEach (entry) =>

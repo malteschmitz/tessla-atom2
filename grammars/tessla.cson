@@ -50,7 +50,7 @@
   },
   {
     'comment': 'Assignment operator'
-    'match': '\:\='
+    'match': ':='
     'name': 'keyword.operator.assignment'
   },
   {
@@ -70,7 +70,7 @@
   },
   {
     'comment': 'Variable names'
-    'match': '(def|define)\\s+([\\w\\d\\_\\.]+)\\s*(?=\\:)'
+    'match': '(def|define)\\s+([\\w\\d_\\.]+)\\s*(?=:)'
     'captures':
       1:
         'name': 'keyword.other'
@@ -79,7 +79,7 @@
   },
   {
     'comment': 'Function names'
-    'begin': '(def|define)\\s+([\\w\\d\\_\\.]+)\\s*(?=\\()'
+    'begin': '(def|define)\\s+([\\w\\d_\\.]+)\\s*(?=\\()'
     'beginCaptures':
       1:
         'name': 'keyword.other'
@@ -88,20 +88,20 @@
     'patterns': [
       {
         'comment': 'Function parameters'
-        'match': '([\\w\\d\\_]+)\\s*(?=\\,|\\))'
+        'match': '([\\w\\d_]+)\\s*(?=,|\\))'
         'captures':
           1:
             'name': 'variable.parameter'
       }
     ]
-    'end': '\\)\\s*(\\:\\=)'
+    'end': '\\)\\s*(:=)'
     'endCaptures':
       1:
         'name': 'keyword.operator.assignment'
   },
   {
     'comment': 'In-streams'
-    'match': '\\b(in)\\s+([\\w\\d\\_\\.]+)'
+    'match': '\\b(in)\\s+([\\w\\d_\\.]+)'
     'captures':
       1:
         'name': 'keyword.other'
@@ -110,7 +110,7 @@
   },
   {
     'comment': 'Out-streams'
-    'match': '\\b(out)\\s+([\\w\\d\\_\\.]+)'
+    'match': '\\b(out)\\s+([\\w\\d_\\.]+)'
     'captures':
       1:
         'name': 'keyword.other'

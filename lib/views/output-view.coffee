@@ -117,15 +117,16 @@ module.exports=
       output.forEach (line) ->
         while (match = regex.exec line)?
           if match?
-            dateString = ""
-            if parseFloat(match[1]) is 0
-              dateString = "initially";
-            else
-              date = new Date parseFloat(match[1])
-              hours = if date.getHours() < 10 then "0#{date.getHours()}" else date.getHours()
-              minutes = if date.getMinutes() < 10 then "0#{date.getMinutes()}" else date.getMinutes()
-              seconds = if date.getSeconds() < 10 then "0#{date.getSeconds()}" else date.getSeconds()
-              dateString = "#{hours}:#{minutes}:#{seconds}.#{date.getMilliseconds()}"
+            # dateString = ""
+            # if parseFloat(match[1]) is 0
+            #   dateString = "initially";
+            # else
+            #   date = new Date parseFloat(match[1])
+            #   hours = if date.getHours() < 10 then "0#{date.getHours()}" else date.getHours()
+            #   minutes = if date.getMinutes() < 10 then "0#{date.getMinutes()}" else date.getMinutes()
+            #   seconds = if date.getSeconds() < 10 then "0#{date.getSeconds()}" else date.getSeconds()
+            #   dateString = "#{hours}:#{minutes}:#{seconds}.#{date.getMilliseconds()}"
+            dateString = match[1]
 
             text = ""
             text = "#{match[3]}#{text}" if match[3]?

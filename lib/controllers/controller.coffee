@@ -273,67 +273,68 @@ module.exports=
       @viewManager.disableButtons()
       @viewManager.enableStopButton()
 
-      @transferFilesToContainer()
+      @transferFilesToContainer().then(() =>
+        binName = path.basename(@viewManager.activeProject.getPath()).replace(" ", "_")
+        traceFile = path.join(@viewManager.activeProject.getPath(), "#{binName}.input")
+        # fs.closeSync(fs.openSync(traceFile, "w"));
 
-      binName = path.basename(@viewManager.activeProject.getPath()).replace(" ", "_")
-      traceFile = path.join(@viewManager.activeProject.getPath(), "#{binName}.trace")
-      # fs.closeSync(fs.openSync(traceFile, "w"));
+        console.log(target.c);
+        args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{target.c.join(" ")}"]
+        @runningProcess = childProcess.spawn("docker", args)
 
-      args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{target.c.join(" ")}"]
+        command = "docker #{args.join " "}"
+        @viewManager.views.logView.addEntry ["Docker", command]
 
-      @runningProcess = childProcess.spawn("docker", args)
+        errors = []
+        outputs = []
+        trace = []
+        @runningProcess.stdout.on "data", (data) =>
+          # line = data.toString()
+          # console.log line
+          # @filterScriptOutput line, errors, outputs
+          lines = data.toString().split "\n"
+          lines = lines.filter (v) => v isnt ""
+          for line in lines
+            console.log(line)
+            @filterScriptOutput line, true, errors, outputs, trace
 
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
+        @runningProcess.stderr.on "data", (data) =>
+          # line = data.toString()
+          # console.log line
+          # @filterScriptOutput line, errors, outputs
+          lines = data.toString().split "\n"
+          lines = lines.filter (v) => v isnt ""
+          for line in lines
+            @filterScriptOutput line, false, errors, outputs, trace
 
-      errors = []
-      outputs = []
-      trace = []
-      @runningProcess.stdout.on "data", (data) =>
-        # line = data.toString()
-        # console.log line
-        # @filterScriptOutput line, errors, outputs
-        lines = data.toString().split "\n"
-        lines = lines.filter (v) => v isnt ""
-        for line in lines
-          @filterScriptOutput line, true, errors, outputs, trace
+        @runningProcess.on "close", (code, signal) =>
+          @runningProcess = null
 
-      @runningProcess.stderr.on "data", (data) =>
-        # line = data.toString()
-        # console.log line
-        # @filterScriptOutput line, errors, outputs
-        lines = data.toString().split "\n"
-        lines = lines.filter (v) => v isnt ""
-        for line in lines
-          @filterScriptOutput line, false, errors, outputs, trace
+          @viewManager.enableButtons()
+          @viewManager.disableStopButton()
 
-      @runningProcess.on "close", (code, signal) =>
-        @runningProcess = null
+          @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
+          @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
 
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
+          # console.log errors
+          if trace.length isnt 0
+            console.log(traceFile)
+            fs.writeFileSync(traceFile, trace.join("\n") + "\n", { encoding: "utf8", flag: "w" })
+            @viewManager.views.logView.addEntry ["message", "Successfully created \"#{path.basename(traceFile)}\" in \"#{path.dirname(traceFile)}\""]
+            atom.notifications.addSuccess "Successfully created \"#{path.basename(traceFile)}\" in \"#{path.dirname(traceFile)}\""
 
-        @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
-        @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
+          else if code isnt null and code isnt 0
+            @viewManager.views.logView.addEntry ["message", "An error occurred while creating a trace file."]
+            atom.notifications.addError "Errors while creating trace file",
+              detail: errors.join ""
+            errors.push "Errors while creating trace file"
 
-        # console.log errors
-        if trace.length isnt 0
-          fs.writeFileSync(traceFile, trace.join("\n") + "\n");
-          @viewManager.views.logView.addEntry ["message", "Successfully created trace file"]
-          atom.notifications.addSuccess "Successfully created trace file"
-
-        else if code isnt null and code isnt 0
-          @viewManager.views.logView.addEntry ["message", "An error occurred while creating a trace file."]
-          atom.notifications.addError "Errors while creating trace file",
-            detail: errors.join ""
-          errors.push "Errors while creating trace file"
-
-        else if signal isnt null
-          @viewManager.views.logView.addEntry ["message", "An error occurred while creating a trace file. The process was killed due to signal #{signal}"]
-          atom.notifications.addError "Errors while creating trace file. Process was killed due to signal #{signal}.",
-            detail: errors.join ""
-          errors.push "Errors while creating trace file. Process was killed due to signal #{signal}."
-
+          else if signal isnt null
+            @viewManager.views.logView.addEntry ["message", "An error occurred while creating a trace file. The process was killed due to signal #{signal}"]
+            atom.notifications.addError "Errors while creating trace file. Process was killed due to signal #{signal}.",
+              detail: errors.join ""
+            errors.push "Errors while creating trace file. Process was killed due to signal #{signal}."
+      )
 
     onBuildCCode: ({ onSuccess, onError }) ->
       console.log("build c code", @viewManager.activeProject.getTargets())
@@ -346,6 +347,7 @@ module.exports=
         return
 
       target = @viewManager.activeProject.getTarget()
+      console.log(target)
       if not isSet(target)
         @viewManager.showNoTargetsSpecified()
         return
@@ -361,46 +363,43 @@ module.exports=
       @viewManager.disableButtons()
       @viewManager.enableStopButton()
 
-      @transferFilesToContainer()
+      @transferFilesToContainer().then(() =>
+        outFile = path.join("bin", path.basename(@viewManager.activeProject.getPath()).replace(" ", "_"))
 
-      outFile = path.join("bin", path.basename(@viewManager.activeProject.getPath()).replace(" ", "_"))
+        args = ["exec", TESSLA_CONTAINER_NAME, "clang", "-o", outFile]
+        args = args.concat(target.c)
+        @runningProcess = childProcess.spawn "docker", args
 
-      args = ["exec", TESSLA_CONTAINER_NAME, "clang", "-o", outFile]
-      # args = args.concat @viewManager.activeProject.cFiles.map (arg) =>
-      #   path.relative @viewManager.activeProject.projPath, arg .replace /\\/g, "/"
-      args = args.concat(target.c)
+        command = "docker #{args.join " "}"
 
-      @runningProcess = childProcess.spawn "docker", args
+        outputs = []
+        @runningProcess.stdout.on "data", (data) =>
+          outputs.push data.toString()
+          # console.log data.toString()
 
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
+        errors = []
+        @runningProcess.stderr.on "data", (data) =>
+          @viewManager.views.errorsCView.addEntry [data.toString()]
+          errors.push data.toString()
 
-      outputs = []
-      @runningProcess.stdout.on "data", (data) =>
-        outputs.push data.toString()
-        # console.log data.toString()
+        @runningProcess.on "close", () =>
+          @viewManager.views.logView.addEntry ["Docker", command]
+          @runningProcess = null
 
-      errors = []
-      @runningProcess.stderr.on "data", (data) =>
-        @viewManager.views.errorsCView.addEntry [data.toString()]
-        errors.push data.toString()
+          @viewManager.enableButtons()
+          @viewManager.disableStopButton()
 
-      @runningProcess.on "close", () =>
-        @runningProcess = null
+          if errors.length is 0
+            @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources."]
+            atom.notifications.addSuccess "Successfully compiled C files"
+            successCallback.call @
 
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        if errors.length is 0
-          @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources."]
-          atom.notifications.addSuccess "Successfully compiled C files"
-          successCallback.call @
-
-        else
-          @viewManager.views.logView.addEntry ["message", "An error occurred while compiling C sources."]
-          atom.notifications.addError "Errors while compiling C files",
-            detail: errors.join ""
-          errorCallback.call @
+          else
+            @viewManager.views.logView.addEntry ["message", "An error occurred while compiling C sources."]
+            atom.notifications.addError "Errors while compiling C files",
+              detail: errors.join ""
+            errorCallback.call @
+      )
 
 
     onRunBinary: ->
@@ -483,102 +482,12 @@ module.exports=
           errors.push line
 
 
-    onDoRVOnTrace: ({ onSuccess, onError }) ->
-      successCallback = if onSuccess isnt null and onSuccess isnt undefined then onSuccess else () -> {}
-      errorCallback = if onError isnt null and onError isnt undefined then onError else () -> {}
-      if @viewManager.activeProject.projPath is ""
-        @viewManager.showNoProjectNotification()
-        errorCallback.call @, []
-        return
-
-      if @viewManager.activeProject.traceFiles.length is 0
-        @viewManager.showNoCompilableTraceFilesNotification()
-        errorCallback.call @, []
-        return
-
-      if @viewManager.activeProject.tesslaFiles.length is 0
-        @viewManager.showNoCompilableTeSSLaFilesNotification()
-        errorCallback.call @, []
-        return
-
-      if @runningProcess isnt null
-        @viewManager.showCurrentlyRunningProcessNotification()
-        errorCallback.call @, []
-        return
-
-      @viewManager.disableButtons()
-      @viewManager.enableStopButton()
-
-      @transferFilesToContainer()
-
-      trcFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.traceFiles[0]
-      tsslFile = path.relative @viewManager.activeProject.projPath, @viewManager.activeProject.tesslaFiles[0]
-
-      args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{tsslFile}", "#{trcFile}"]
-
-      @runningProcess = childProcess.spawn "docker", args
-
-      command = "docker #{args.join " "}"
-      @viewManager.views.logView.addEntry ["Docker", command]
-
-      errors = []
-      outputs = []
-      @runningProcess.stdout.on "data", (data) =>
-        # line = data.toString()
-        # console.log line
-        # @filterScriptOutput line, errors, outputs
-        lines = data.toString().split "\n"
-        lines = lines.filter (v) => v isnt ""
-        for line in lines
-          @filterScriptOutput line, true, errors, outputs
-
-      @runningProcess.stderr.on "data", (data) =>
-        # line = data.toString()
-        # console.log line
-        # @filterScriptOutput line, errors, outputs
-        lines = data.toString().split "\n"
-        lines = lines.filter (v) => v isnt ""
-        for line in lines
-          @filterScriptOutput line, false, errors, outputs
-
-      @runningProcess.on "close", (code, signal) =>
-        @runningProcess = null
-
-        @viewManager.enableButtons()
-        @viewManager.disableStopButton()
-
-        @viewManager.views.consoleView.addEntry ["<strong>Process exited with code #{code}.</strong>"]  if code?
-        @viewManager.views.consoleView.addEntry ["<strong>Process was killed due to signal #{signal}.</strong>"]  if signal?
-
-        # console.log errors
-
-        if errors.length is 0 and code is 0 and signal is null
-          # @viewManager.views.logView.addEntry ["message", "Successfully compiled C sources"]
-          # atom.notifications.addSuccess "Successfully compiled C sources"
-          successCallback.call @, outputs
-
-        else if code isnt null and code isnt 0
-          @viewManager.views.logView.addEntry ["message", "An error occurred while instrumenting the trace file."]
-          atom.notifications.addError "Errors while instrumenting trace file",
-            detail: errors.join ""
-          errors.push "Errors while instrumenting trace file"
-          errorCallback.call @, errors
-
-        else if signal isnt null
-          @viewManager.views.logView.addEntry ["message", "An error occurred while instrumenting the trace file. The process was killed due to signal #{signal}"]
-          atom.notifications.addError "Errors while instrumenting trace file Process was killed due to signal #{signal}.",
-            detail: errors.join ""
-          errors.push "Errors while instrumenting trace file Process was killed due to signal #{signal}."
-          errorCallback.call @, errors
-
-
     onDoRV: ({ onSuccess, onError }) ->
       notification = @viewManager.showIndeterminateProgress(
         "Sync files",
         "Sync files with Docker container."
       )
 
-      console.log "Controller.onDoRV: verify input trace..."
       successCallback = if onSuccess isnt null and onSuccess isnt undefined then onSuccess else () -> {}
       errorCallback = if onError isnt null and onError isnt undefined then onError else () -> {}
 
@@ -586,7 +495,6 @@ module.exports=
         @viewManager.showNoProjectNotification()
         errorCallback.call @, []
         return
-      console.log "Controller.onDoRV: check if project is set..."
 
       target = @viewManager.activeProject.getTarget()
 
@@ -594,40 +502,48 @@ module.exports=
         @viewManager.views.logView.addEntry ["message", "No targets for compilation found. Provide at least \"target.main\" in \".\""]
         errorCallback.call @, ["No targets for compilation found. Provide at least \"target.main\" in \".\""]
         return
-      console.log "Controller.onDoRV: check if target.main is set..."
 
       if @runningProcess isnt null
         @viewManager.showCurrentlyRunningProcessNotification()
         errorCallback.call @, []
         return
-      console.log "Controller.onDoRV: check wether process is already running..."
 
       @viewManager.disableButtons()
       @viewManager.enableStopButton()
-      console.log "Controller.onDoRV: disabled UI elements..."
 
-      @transferFilesToContainer =>
+      @transferFilesToContainer().then(() =>
         notification.dismiss()
         notification = @viewManager.showIndeterminateProgress(
           "Compiling/Instrumenting",
           "Compiling and instrumenting project files using the TeSSLa2 Docker-container. For further information see \"Console\"/\"Log\" view."
         )
-        console.log "Controller.onDoRV: transfered files to docker mount directory..."
-        console.log "Controller.onDoRV: get files for compilation process"
 
-        console.log(target)
         if target.tessla is null or target.tessla is undefined
           notification.dismiss()
-          @viewManager.views.logView.addEntry(["message", "No tessla file specified"])
+          @viewManager.views.warningsView.addEntry(["No tessla file specified"])
+          @viewManager.views.logView.addEntry(["message", "Failed to verify project. For further information see \"Warnings\" view."])
+          atom.notifications.addWarning("No tessla file specified")
           return
 
-        if target.c is null or target.c is undefined or target.c.length is 0
+        if (target.c isnt null and target.c isnt undefined) and (target.input isnt null and target.input isnt undefined)
           notification.dismiss()
-          @viewManager.views.logView.addEntry(["message", "No c files for verification specified"])
+          @viewManager.views.warningsView.addEntry(["Input file and C sources passed. Please pass either input file or C source."])
+          @viewManager.views.logView.addEntry(["message", "Failed to verify project. For further information see \"Warnings\" view."])
+          atom.notifications.addWarning("Input file and C sources passed. Please pass either input file or C source.")
           return
 
-        args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{target.c[0]}", "#{target.tessla}"]
+        if (target.c is null or target.c is undefined or target.c.length is 0) and (target.input is null or target.input is undefined)
+          notification.dismiss()
+          @viewManager.views.warningsView.addEntry(["No C files or input files specified for verification."])
+          @viewManager.views.logView.addEntry(["message", "Failed to verify project. For further information see \"Warnings\" view."])
+          atom.notifications.addWarning("No C files or input files specified for verification.")
+          return
 
+        args = []
+        if target.c isnt null and target.c isnt undefined
+          args = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", "#{target.c[0]}", "#{target.tessla}"]
+        if target.input isnt null and target.input isnt undefined
+          args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{target.tessla}", "#{target.input}"]
         @runningProcess = childProcess.spawn "docker", args
 
         command = "docker #{args.join " "}"
@@ -639,10 +555,16 @@ module.exports=
           # line = data.toString()
           # console.log line
           # @filterScriptOutput line, errors, outputs
-          lines = data.toString().split "\n"
-          lines = lines.filter (v) => v isnt ""
-          for line in lines
-            @filterScriptOutput line, true, errors, outputs
+          if target.input isnt null and target.input isnt undefined
+            outputs.push(data.toString())
+            for line in data.toString().split("\n")
+              if line isnt ""
+                @viewManager.views.consoleView.addEntry([line])
+          else
+            lines = data.toString().split "\n"
+            lines = lines.filter (v) => v isnt ""
+            for line in lines
+              @filterScriptOutput line, true, errors, outputs
 
         @runningProcess.stderr.on "data", (data) =>
           # line = data.toString()
@@ -683,6 +605,7 @@ module.exports=
               detail: errors.join ""
             errors.push "Errors while instrumenting project files. Process was killed due to signal #{signal}."
             errorCallback.call @, errors
+      )
 
 
     onStopRunningProcess: ->
@@ -776,6 +699,7 @@ module.exports=
         "sh"                                    # executes the shell inside the container to prevent stopping the container imediatly
       ]
       # start process using defined arguments
+      try childProcess.execSync("docker rm -f #{TESSLA_CONTAINER_NAME}") catch e then console.log(e)
       dockerContainer = childProcess.spawn "docker", dockerArgs
       # log command
       @messageQueue.enqueueEntry { type: "entry", title: "", label: "Docker", msg: "docker #{dockerArgs.join " "}" }
@@ -822,33 +746,41 @@ module.exports=
           @messageQueue.flush()
 
 
-    transferFilesToContainer: (callback) ->
-      fs.emptyDir @containerDir, =>
-        @viewManager.views.logView.addEntry ["command", "rm -rf #{@containerDir}/*"]
-        fs.mkdir path.join(@containerBuild), =>
-          @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
-          @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.getPath()}/* #{@containerDir}/"]
-          filesToTransfer = []
-          transferedFiles = []
-          target = @viewManager.activeProject.getTarget()
-          if not isSet(target)
-            return
-          if isSet(target.tessla)
-            filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.tessla))
-            transferedFiles.push(path.join(@containerDir, target.tessla))
-            if fs.existsSync(@viewManager.activeProject.getPath(), "stdlib.tessla")
-              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), "stdlib.tessla"))
-              transferedFiles.push(path.join(@containerBuild, "stdlib.tessla"))
-          if isSet(target.input)
-            filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.input))
-            transferedFiles.push(path.join(@containerDir, target.input))
-          if isSet(target.c)
-            for file in target.c
-              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), file))
-              transferedFiles.push(path.join(@containerDir, file))
-          for file, index in filesToTransfer
-            src = file
-            dest = transferedFiles[index]
-            if fs.existsSync(file)
-              fs.createReadStream(src).pipe(fs.createWriteStream(dest));
-          callback() if isSet(callback)
+    transferFilesToContainer: () ->
+      return new Promise((resolve, reject) =>
+        fs.emptyDir @containerDir, =>
+          @viewManager.views.logView.addEntry ["command", "rm -rf #{@containerDir}/*"]
+          fs.mkdir path.join(@containerBuild), =>
+            @viewManager.views.logView.addEntry ["command", "mkdir #{@containerBuild}"]
+            # @viewManager.views.logView.addEntry ["command", "rsync -r --exclude=.gcc-flags.json #{@viewManager.activeProject.getPath()}/* #{@containerDir}/"]
+            filesToTransfer = []
+            transferedFiles = []
+            target = @viewManager.activeProject.getTarget()
+            if not isSet(target)
+              return
+            if isSet(target.tessla)
+              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.tessla))
+              transferedFiles.push(path.join(@containerDir, target.tessla))
+              if fs.existsSync(@viewManager.activeProject.getPath(), "stdlib.tessla")
+                filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), "stdlib.tessla"))
+                transferedFiles.push(path.join(@containerBuild, "stdlib.tessla"))
+                filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), "stdlib.tessla"))
+                transferedFiles.push(path.join(@containerDir, "stdlib.tessla"))
+            if isSet(target.input)
+              filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), target.input))
+              transferedFiles.push(path.join(@containerDir, target.input))
+            if isSet(target.c)
+              for file in target.c
+                filesToTransfer.push(path.join(@viewManager.activeProject.getPath(), file))
+                transferedFiles.push(path.join(@containerDir, file))
+            for file, index in filesToTransfer
+              src = file
+              dest = transferedFiles[index]
+              if fs.existsSync(file)
+                fs.createReadStream(src).pipe(fs.createWriteStream(dest))
+                @viewManager.views.logView.addEntry ["command", "cp #{src} #{dest}"]
+            resolve()
+      )
+
+    dispose: ->
+      @viewManager.dispose()

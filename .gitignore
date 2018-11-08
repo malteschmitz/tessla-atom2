@@ -4,4 +4,6 @@ node_modules
 build
 .gcc-flags.json
 .targets.yml
+targets.yml
 docker-image
+.eslintrc
