@@ -267,6 +267,7 @@ module.exports=
         traceContent = []
         # exec command
         dockerArgs = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", target.c.join(" ")]
+        notification = @showIndeterminateProgress("Instrumenting C Sources", "Creating trace file \"#{path.join(@activeProject.getPath(), traceName)}\"")
         @lockButtons()
         @runningProcess = tessla = childProcess.spawn("docker", dockerArgs)
         @consoleViews.logView.addEntry(["Docker", "docker #{dockerArgs.join(" ")}"])
@@ -295,6 +296,7 @@ module.exports=
         tessla.on("close", (code, signal) =>
           @runningProcess = null
           @unlockButtons()
+          notification.dismiss()
           if hadError
             message = "An error occurred. See \"Errors (TeSSLa)\" view for further information"
             atom.notifications.addError("Could not create trace file", {
@@ -350,6 +352,7 @@ module.exports=
           "-o",
           path.join("bin", binName)
         ]
+        notification = @showIndeterminateProgress("Compiling C Sources", "Compiling C source files: #{target.c.map((file) => "\"#{file}\"").join(" ")}")
         @lockButtons()
         @runningProcess = compile = childProcess.spawn("docker", dockerArgs)
         compile.stderr.on("data", (data) =>
@@ -360,6 +363,7 @@ module.exports=
         compile.on("close", (code, signal) =>
           @runningProcess = null
           @unlockButtons()
+          notification.dismiss()
           if hadError
             message = "An error occurred. See \"Errors (C)\" view for further information"
             atom.notifications.addError("Could not compile C sources", {
@@ -375,6 +379,7 @@ module.exports=
           else
             hadError = no
             dockerArgs = ["exec", TESSLA_CONTAINER_NAME, path.join("bin", binName)]
+            notification = @showIndeterminateProgress("Executing binary", "Executing binary: \"#{path.join("bin", binName)}\"")
             @lockButtons()
             @runningProcess = program = childProcess.spawn("docker", dockerArgs)
             program.stdout.on("data", (data) =>
@@ -389,6 +394,7 @@ module.exports=
             program.on("close", (code, signal) =>
               @runningProcess = null
               @unlockButtons()
+              notification.dismiss()
               if hadError
                 message = "An error occurred. See \"Errors (C)\" view for further information"
                 atom.notifications.addError("Could not execute C binary", {
@@ -430,6 +436,7 @@ module.exports=
         else
           dockerArgs = dockerArgs.concat(["tessla", target.tessla, target.input])
         traceContent = []
+        notification = @showIndeterminateProgress("Verify Project Files", "Verifying project files using \"#{target.tessla}\"")
         @lockButtons()
         @runningProcess = rv = childProcess.spawn("docker", dockerArgs)
         rv.stderr.on("data", (data) =>
@@ -457,6 +464,7 @@ module.exports=
         rv.on("close", (code, signal) =>
           @runningProcess = null
           @unlockButtons()
+          notification.dismiss()
           if hadError
             message = "An error occurred during project verification. For further information see \"Errors (TeSSLa)\" view."
             atom.notifications.addError("Could not verify project by TeSSLa specification", {
@@ -483,6 +491,30 @@ module.exports=
         @runningProcess.kill("SIGKILL")
         @consoleViews.logView.addEntry(["command", "kill -9 #{@runningProcess.pid}"])
 
+
+    showIndeterminateProgress: (title, text, dismissable=yes) ->
+      # show notification to user that a pull request will start that may take
+      # a few minutes if the latest version of tessla2 is not already downloaded
+      notification = atom.notifications.addInfo title,
+        detail: text
+        dismissable: dismissable
+
+      progressWrapper = document.createElement "div"
+      progressWrapper.classList.add "block"
+
+      progress = document.createElement "progress"
+      progress.classList.add "block", "full-width-progress"
+
+      progressWrapper.appendChild progress
+
+      try
+        notificationView = atom.views.getView notification
+        notificationViewContent = notificationView.element.querySelector ".detail-content"
+        notificationViewContent?.appendChild progressWrapper
+      catch _
+
+      # return the notification object back
+      return notification
 
     dispose: ->
       @subscriptions.dispose()
