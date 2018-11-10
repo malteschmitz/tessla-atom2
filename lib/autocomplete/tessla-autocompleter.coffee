@@ -5,13 +5,14 @@ showdown = require "showdown"
 converter = new showdown.Converter()
 
 module.exports=
-  class TeSSLaProvider
-    selector: "tessla"
-    disableForSelector: "comment"
-    inclusionPriority: 1
-    excludeLowerPriority: true
-    suggestionPriority: 2
-    filterSuggestions: true
+  class TeSSLaAutocompleter
+    constructor: ->
+      @selector = "tessla"
+      @disableForSelector = "comment"
+      @inclusionPriority = 1
+      @excludeLowerPriority = yes
+      @suggestionPriority = 2
+      @filterSuggestions = yes
 
 
     getSuggestions: (options) =>
@@ -21,6 +22,7 @@ module.exports=
         @findMatchingSuggestions(prefix, editor)
           .then((suggestions) => resolve(suggestions))
       )
+
 
     findMatchingSuggestions: (prefix, editor) =>
       return new Promise((resolve, reject) =>

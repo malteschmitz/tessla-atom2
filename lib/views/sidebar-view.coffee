@@ -1,6 +1,6 @@
 
 SidebarViewElement = require "./sidebar-view-element"
-FileManager = require "../controllers/file-manager"
+FileReader = require "../utils/file-reader"
 
 path = require("path")
 
@@ -101,7 +101,7 @@ module.exports=
       list = []
 
       cFiles.forEach (file) ->
-        FileManager.collectCFunctionsFromSourceFile
+        FileReader.collectCFunctionsFromSourceFile
           sourceFile: path.join(activeProject.getPath(), file)
           projectPath: activeProject.getPath()
         .forEach (func) ->
@@ -111,7 +111,7 @@ module.exports=
         cFile.observed = no
         cFile.exists = yes
 
-      FileManager.collectCFunctionsFromSourceFile
+      FileReader.collectCFunctionsFromSourceFile
         sourceFile: path.join(activeProject.getPath(), tesslaFile)
         projectPath: activeProject.getPath()
       .forEach (func) ->

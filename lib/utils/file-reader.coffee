@@ -2,7 +2,7 @@ path = require "path"
 fs = require "fs"
 
 module.exports=
-  class FileManager
+  class FileReader
 
     @collectCFunctionsFromSourceFile: ({ sourceFile, projectPath }) ->
       namesAssoc = {}
@@ -67,4 +67,4 @@ module.exports=
         for key, funcs of namesAssoc
           names.push funcs
 
-      names
+      return names

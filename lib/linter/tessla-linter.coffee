@@ -1,0 +1,79 @@
+fs = require("fs-extra")
+os = require("os")
+path = require("path")
+childProcess = require("child_process")
+
+{TESSLA_CONTAINER_NAME} = require("../utils/constants")
+{isSet} = require("../utils/utils")
+
+module.exports=
+  class TeSSLaLinter
+    constructor: ->
+      @name = "Example"
+      @scope = "file"
+      @lintsOnChange = no
+      @grammarScopes = ["tessla"]
+      @lint = @onLint
+
+    onLint: (textEditor) =>
+      return new Promise (resolve, reject) =>
+        if not isSet(textEditor) or not isSet(textEditor.getPath())
+          return
+
+        containerDir = path.join(os.homedir(), ".tessla-env")
+        stdlibTessla = path.join(path.dirname(textEditor.getPath()), "stdlib.tessla")
+
+        fs.copySync(textEditor.getPath(), path.join(containerDir, textEditor.getTitle()))
+        if fs.existsSync(stdlibTessla)
+          fs.copySync(stdlibTessla, path.join(containerDir, "stdlib.tessla"))
+
+        args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
+        command = "docker #{args.join " "}"
+        # console.log(command)
+
+        editorPath = textEditor.getPath()
+        verifier = childProcess.spawn("docker", args)
+
+        errors = []
+        warnings = []
+
+        verifier.stdout.on "data", (data) ->
+          console.log "stdout: " + data.toString()
+        verifier.stderr.on "data", (data) ->
+          console.log(data.toString());
+          for line in data.toString().split("\n")
+            lineIsError = line.substr(0, 5) is "Error"
+            lineIsWarning = line.substr(0, 7) is "Warning"
+            errors.push(line) if line isnt "" and lineIsError
+            warnings.push(line) if line isnt "" and lineIsWarning
+        verifier.on "close", () ->
+          # console.log("closed verifier")
+          # console.log(errors)
+          # get an array of items
+          items = []
+          # regex
+          regex = /(Error|Warning)\s*:\s*(\w[\w\.]*)\s*\(([\d]+)+\s*,\s*([\d]+)\s*-\s*([\d]+)\s*,\s*([\d]+)\)\s*:([\w\s]*)/gm
+          # parse error messages
+          for error in errors
+            while matches = regex.exec(error)
+              items.push(
+                  severity: "error"
+                  location:
+                    file: editorPath
+                    position: [[matches[3] - 1, matches[4] - 1], [matches[5] - 1, matches[6] - 1]]
+                  excerpt: matches[7]
+                  description: ""
+              )
+          # parse warning messages
+          for warning in warnings
+            while matches = regex.exec(warning)
+              items.push(
+                  severity: "warning"
+                  location:
+                    file: editorPath
+                    position: [[matches[3] - 1, matches[4] - 1], [matches[5] - 1, matches[6] - 1]]
+                  excerpt: matches[7]
+                  description: ""
+              )
+          # Do something sync
+          resolve(items)

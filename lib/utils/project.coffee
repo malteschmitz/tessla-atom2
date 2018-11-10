@@ -7,6 +7,7 @@ fileSystem = require("fs")
 childProcess = require("child_process")
 YAML = require("yaml")
 EventEmitter = require("events")
+scanFolder = require("scan-folder")
 
 module.exports=
   class Project extends EventEmitter
@@ -63,6 +64,22 @@ module.exports=
         if fs.existsSync(path.join(@path, "targets.yml"))
           resolve()
         else
+          allow = { dotfolders: yes, dotfiles: yes, modules: yes }
+          cFiles = scanFolder(@path, ".c", yes, allow)
+          tesslaFiles = scanFolder(@path, ".tessla", yes, allow)
+          inputFiles = scanFolder(@path, ".input", yes, allow)
+
+          if isSet(tesslaFiles) and tesslaFiles.length is 0
+            tesslaFiles.push(path.join(@path, "spec.tessla"))
+
+          if isSet(inputFiles) and inputFiles.length is 0
+            inputFiles.push(path.join(@path, "trace.input"))
+
+          if isSet(cFiles) and cFiles.length is 0
+            cFiles.push(path.join(@path, "file_1.c"))
+            cFiles.push(path.join(@path, "file_2.c"))
+          cFiles = cFiles.map((file) => path.relative(@path, file))
+
           fs.writeFileSync(
             path.join(@path, "targets.yml"),
             "# The \"active\" key specifies the the files which should be considered during compiliation.\n" +
@@ -80,15 +97,12 @@ module.exports=
             "active": "main",
             "targets": {
               "main": {
-                tessla: "spec.tessla",
-                input: "trace.input"
+                tessla: path.relative(@path, tesslaFiles[0]),
+                input: path.relative(@path, inputFiles[0])
               },
               "debug": {
-                tessla: "spec.tessla",
-                c: [
-                  "file_1.c",
-                  "file_2.c"
-                ]
+                tessla: path.relative(@path, tesslaFiles[0]),
+                c: cFiles
               }
             }
           }

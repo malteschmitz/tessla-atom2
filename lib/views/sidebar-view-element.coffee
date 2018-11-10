@@ -71,7 +71,7 @@ module.exports=
         editor.setCursorBufferPosition [editor.getLineCount(), 0]
 
         text  = "\n# Inserted test case automatically in the first tessla file that was found"
-        text += "\ndef calls_#{functionName} : Events[Unit] := function_calls(\"#{functionName}\")"
+        text += "\ndef calls_#{functionName} : Events[Unit] := function_call(\"#{functionName}\")"
 
         editor.save() if editor.insertText text, { select: yes, autoIndent: yes }
 

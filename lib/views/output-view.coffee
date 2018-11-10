@@ -150,5 +150,3 @@ module.exports=
       for key, value of formatted
         value.sort (a, b) -> a.time - b.time
         @addEntry key, value
-
-      console.log formatted
