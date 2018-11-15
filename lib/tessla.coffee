@@ -187,6 +187,8 @@ module.exports=
       type: "TeSSLa RV", background: "#5BB336", color: "#FFF"
     }, {
       type: "status", background: "#FF996E", color: "#FFF"
+    }, {
+      type: "clang", background: "#C00", color: "#FFF"
     }]
 
     Promise.all([

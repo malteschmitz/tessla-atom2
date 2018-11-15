@@ -16,6 +16,8 @@ module.exports=
   class Controller
     constructor: () ->
       @runningProcess = null
+      @currentlyMounting = no
+      @pullDone = no
       @subscriptions = new CompositeDisposable
       @activeProject = new Project
       @toolbarButtons = null
@@ -30,14 +32,51 @@ module.exports=
       )
 
       @activeProject.on("project-dir-changed", =>
+        if not @pullDone
+          return
+        notification = @showIndeterminateProgress(
+          "Creating TeSSLa-Container...",
+          "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
+          no
+        )
+        @lockButtons()
+        @currentlyMounting = yes
         @sidebarView.update(@activeProject)
-        @mountProjectIntoContainer()
+        @mountProjectIntoContainer().then(=>
+          notification.dismiss()
+          @unlockButtons()
+          @currentlyMounting = no
+        ).catch((err) =>
+          notification.dismiss()
+          @unlockButtons()
+          @currentlyMounting = no
+          Logger.err(err)
+        )
       )
 
 
     onViewSetUpReady: ->
       Logger.log("Controller.onViewSetUpReady()")
-      @mountProjectIntoContainer()
+      @pullDone = yes
+      notification = @showIndeterminateProgress(
+        "Creating TeSSLa-Container...",
+        "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
+        no
+      )
+      @lockButtons()
+      @currentlyMounting = yes
+      @sidebarView.update(@activeProject)
+      @mountProjectIntoContainer().then(=>
+        notification.dismiss()
+        @unlockButtons()
+        @currentlyMounting = no
+      ).catch((err) =>
+        @unlockButtons()
+        notification.dismiss()
+        @unlockButtons()
+        @currentlyMounting = no
+        Logger.err(err)
+      )
 
 
     connectToToolbarBtns: (btns) =>
@@ -208,15 +247,22 @@ module.exports=
 
     noProcessRunning: =>
       return new Promise((resolve, reject) =>
-        if not isSet(@runningProcess)
-          resolve()
-        else
+        if @currentlyMounting
+          message = "You can not start process until the docker container is properly connected to the current project."
+          atom.notifications.addWarning("Could start process", {
+            detail: message
+          })
+          @consoleViews.warningsView.addEntry([message])
+          reject(new Error(message))
+        else if isSet(@runningProcess)
           message = "You can not start another process if there is another process in execution."
           atom.notifications.addWarning("Could start process", {
             detail: message
           })
           @consoleViews.warningsView.addEntry([message])
           reject(new Error("There is already a process in execution!"))
+        else
+          resolve()
       )
 
 
@@ -266,7 +312,9 @@ module.exports=
         traceFile = fs.createWriteStream(path.join(@activeProject.getPath(), traceName), { flags: "w" })
         traceContent = []
         # exec command
-        dockerArgs = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv", target.c.join(" ")]
+        dockerArgs = ["exec", TESSLA_CONTAINER_NAME, "tessla_rv"]
+        for file in target.c
+          dockerArgs.push(file)
         notification = @showIndeterminateProgress("Instrumenting C Sources", "Creating trace file \"#{path.join(@activeProject.getPath(), traceName)}\"")
         @lockButtons()
         @runningProcess = tessla = childProcess.spawn("docker", dockerArgs)
@@ -310,6 +358,9 @@ module.exports=
             })
             @consoleViews.logView.addEntry(["message", message])
           else
+            atom.notifications.addSuccess("Trace \"#{path.join(@activeProject.getPath(), traceName)}\" created", {
+              detail: message
+            })
             @consoleViews.logView.addEntry(["message", "Trace \"#{path.join(@activeProject.getPath(), traceName)}\" created"])
             @formattedOutputView.update(traceContent)
         )
@@ -407,6 +458,12 @@ module.exports=
                   detail: message
                 })
                 @consoleViews.logView.addEntry(["message", message])
+              else
+                message = "Compiled and executed C sources"
+                atom.notifications.addSuccess(message, {
+                  detail: message
+                })
+                @consoleViews.logView.addEntry(["message", message])
             )
         )
       ).catch((err) =>
@@ -432,7 +489,9 @@ module.exports=
         hadError = no
         dockerArgs = ["exec", TESSLA_CONTAINER_NAME]
         if isSet(target.c)
-          dockerArgs = dockerArgs.concat(["tessla_rv", target.c.join(" "), target.tessla])
+          dockerArgs = dockerArgs.concat(["tessla_rv", "--spec", target.tessla])
+          for file in target.c
+            dockerArgs.push(file)
         else
           dockerArgs = dockerArgs.concat(["tessla", target.tessla, target.input])
         traceContent = []
@@ -443,6 +502,9 @@ module.exports=
           line = data.toString()
           if line.startsWith("[status]")
             @consoleViews.logView.addEntry(["TeSSLa RV", line.replace(/\[status\]\s*/g, "")])
+          else if line.startsWith("[clang ]")
+            hadError = yes
+            @consoleViews.errorsTeSSLaView.addEntry([line.replace(/\[clang \]\s*/g, "")])
           else
             hadError = yes
             @consoleViews.errorsTeSSLaView.addEntry([line])
@@ -478,6 +540,9 @@ module.exports=
             })
             @consoleViews.logView.addEntry(["message", message])
           else
+            atom.notifications.addSuccess("Verified project files", {
+              detail: message
+            })
             @consoleViews.logView.addEntry(["message", "Verified project files"])
             @formattedOutputView.update(traceContent)
         )

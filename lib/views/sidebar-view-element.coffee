@@ -1,9 +1,9 @@
-scanFolder = require "scan-folder"
+path = require("path")
 
 module.exports=
   class SidebarViewElement
 
-    constructor: ({ name: name, file: file, line: line, column: col, observed: o, exists: e, viewManager: v }) ->
+    constructor: ({ name: name, file: file, line: line, column: col, observed: o, exists: e, path: p, spec: spec }) ->
       observed = o ? no
       exists = e ? no
 
@@ -44,8 +44,10 @@ module.exports=
 
       addBtn.addEventListener "click", (event) =>
         @onAddTest
+          file: file
           functionName: name
-          projectPath: v.activeProject.getPath()
+          projectPath: p
+          spec: spec
         , event
 
 
@@ -60,14 +62,8 @@ module.exports=
       console.log "jump to file #{file} line #{line}, col #{column}"
 
 
-    onAddTest: ({ functionName, projectPath }, event) ->
-      tesslaFile = scanFolder(projectPath, ".tessla", yes,
-        dotFolder: no,
-        dotFiles: no,
-        modules: no,
-      )[0]
-
-      atom.workspace.open(tesslaFile, { split: "right", searchAllPanes: yes }).then (editor) ->
+    onAddTest: ({ file, functionName, projectPath, spec }, event) ->
+      atom.workspace.open(spec, { split: "right", searchAllPanes: yes }).then (editor) ->
         editor.setCursorBufferPosition [editor.getLineCount(), 0]
 
         text  = "\n# Inserted test case automatically in the first tessla file that was found"

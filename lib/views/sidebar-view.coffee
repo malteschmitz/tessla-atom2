@@ -10,7 +10,6 @@ module.exports=
     constructor: (@config) ->
       @title = @config.title
       @URI = @config.URI
-      @viewManager = null
 
       @element = document.createElement "div"
       @element.classList.add "sidebar-wrapper"
@@ -36,11 +35,7 @@ module.exports=
       @element.appendChild listWrapper
 
 
-    setViewManager: (viewManager) ->
-      @viewManager = viewManager
-
-
-    addEntry: ({name, file, line, column, observed, exists}) ->
+    addEntry: ({name, file, line, column, observed, exists, projPath, spec}) ->
       entry = new SidebarViewElement
         name: name
         file: file
@@ -48,7 +43,8 @@ module.exports=
         column: column.toString()
         observed: observed
         exists: exists
-        viewManager: this.viewManager
+        path: projPath
+        spec: spec
 
       listGroup = @element.getElementsByClassName("list-group")[0]
       placeholder = listGroup.querySelector ".placeholder"
@@ -136,3 +132,5 @@ module.exports=
           column: entry.column
           observed: entry.observed
           exists: entry.exists
+          projPath: activeProject.getPath()
+          spec: tesslaFile
