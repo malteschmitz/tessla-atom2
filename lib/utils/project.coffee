@@ -82,25 +82,27 @@ module.exports=
 
           fs.writeFileSync(
             path.join(@path, "targets.yml"),
-            "# The \"active\" key specifies the the files which should be considered during compiliation.\n" +
-            "# The files are split grouped by type where \"tessla\" contains a single spec file written\n" +
-            "# in TeSSLa. The \"input\" key contains a single trace file which substitutes a whole c\n" +
-            "# programm. The key \"c\" contains a list of c files which should be verified by the TeSSLa\n" +
-            "# spec.\n" +
-            "#\n" +
             "# The \"targets\" key specifies the different file constellations. You can specify as much\n" +
             "# such constallations as you wish. To switch the considered configuration just change\n" +
-            "# the \"active\" key to match the target you wish.\n\n",
+            "# the \"active\" key to match the target you wish.\n" +
+            "#\n" +
+            "# A target can contain the following properties\n" +
+            "# \t- binName: The name for the executable C binary and the created trace file\n" +
+            "# \t- tessla: A single tessla specification file that will be considered by tessla and tessla_rv\n" +
+            "# \t- input: A single tracefile\n" +
+            "# \t- c: A list of C files that should be compiled\n\n",
             { flag: "wx" }
           )
           fileContent = {
             "active": "main",
             "targets": {
               "main": {
+                binName: path.basename(@path)
                 tessla: path.relative(@path, tesslaFiles[0]),
                 input: path.relative(@path, inputFiles[0])
               },
               "debug": {
+                binName: path.basename(@path)
                 tessla: path.relative(@path, tesslaFiles[0]),
                 c: cFiles
               }
@@ -114,6 +116,11 @@ module.exports=
       return new Promise((resolve, reject) =>
         file = fs.readFileSync(path.join(@path, "targets.yml"), "utf8")
         @targets = YAML.parse(file)
+        if not isSet(@targets.targets)
+          @targets.targets = {}
+        for k, v of @targets.targets
+          if not isSet(v.binName)
+            @targets.targets[k].binName = path.basename(@path).replace(/\s/g, "_")
         resolve()
       )
 
@@ -133,20 +140,30 @@ module.exports=
           console.log(err)
         )
 
-    getTarget: =>
-      file = fs.readFileSync(path.join(@path, "targets.yml"), "utf8")
-      @targets = YAML.parse(file)
-      if @targets.active is null && @targets.targets isnt null
-        return activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
-      if @targets.targets is null or @targets.targets.length is 0
-        return null
-      activeTarget = null
-      for k, v of @targets.targets
-        if @targets.active is k
-          activeTarget = v
-      if activeTarget is null
-        activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
-      return activeTarget
+    readTarget: =>
+      return new Promise((resolve, reject) =>
+        @checkTargetsYAML().then(=>
+          file = fs.readFileSync(path.join(@path, "targets.yml"), "utf8")
+          @targets = YAML.parse(file)
+          for k, v of @targets.targets
+            if not isSet(v.binName)
+              @targets.targets[k].binName = path.basename(@path).replace(/\s/g, "_")
+          if @targets.active is null && @targets.targets isnt null
+            return activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
+          if @targets.targets is null or @targets.targets.length is 0
+            return null
+          activeTarget = null
+          for k, v of @targets.targets
+            if @targets.active is k
+              activeTarget = v
+          if activeTarget is null
+            activeTarget = @targets.targets[Object.keys(@targets.targets)[0]]
+          resolve(activeTarget)
+        ).catch((err) =>
+          reject(err)
+        )
+      )
+
 
     getPath: =>
       return @path

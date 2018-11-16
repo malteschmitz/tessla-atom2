@@ -1,4 +1,4 @@
-
+{isSet} = require("../utils/utils")
 SidebarViewElement = require "./sidebar-view-element"
 FileReader = require "../utils/file-reader"
 
@@ -83,54 +83,54 @@ module.exports=
       if activeProject is null or activeProject.getPath() is null
         return
 
-      target = activeProject.getTarget()
+      activeProject.readTarget().then((target) =>
+        cFiles = target.c
+        tesslaFile = target.tessla
 
-      cFiles = target.c
-      tesslaFile = target.tessla
+        @clearEntries()
 
-      @clearEntries()
+        cFunctions = []
+        tFunctions = []
+        list = []
 
-      return unless cFiles? or tFiles?
+        if isSet(cFiles)
+          cFiles.forEach (file) ->
+            FileReader.collectCFunctionsFromSourceFile
+              sourceFile: path.join(activeProject.getPath(), file)
+              projectPath: activeProject.getPath()
+            .forEach (func) ->
+              list.push func
 
-      cFunctions = []
-      tFunctions = []
-      list = []
+        list.forEach (cFile) ->
+          cFile.observed = no
+          cFile.exists = yes
 
-      cFiles.forEach (file) ->
-        FileReader.collectCFunctionsFromSourceFile
-          sourceFile: path.join(activeProject.getPath(), file)
-          projectPath: activeProject.getPath()
-        .forEach (func) ->
-          list.push func
+        if isSet(tesslaFile)
+          FileReader.collectCFunctionsFromSourceFile
+            sourceFile: path.join(activeProject.getPath(), tesslaFile)
+            projectPath: activeProject.getPath()
+          .forEach (func) ->
+            definedInCFiles = no
 
-      list.forEach (cFile) ->
-        cFile.observed = no
-        cFile.exists = yes
+            list.forEach (listFunc) ->
+              if listFunc.functionName is func.functionName
+                definedInCFiles = yes
+                listFunc.observed = yes
 
-      FileReader.collectCFunctionsFromSourceFile
-        sourceFile: path.join(activeProject.getPath(), tesslaFile)
-        projectPath: activeProject.getPath()
-      .forEach (func) ->
-        definedInCFiles = no
+            unless definedInCFiles
+              func.exists = no
+              func.observed = no
+              list.push func
 
-        list.forEach (listFunc) ->
-          if listFunc.functionName is func.functionName
-            definedInCFiles = yes
-            listFunc.observed = yes
-
-        unless definedInCFiles
-          func.exists = no
-          func.observed = no
-          list.push func
-
-      list.sort (a, b) -> a.functionName.localeCompare b.functionName
-      list.forEach (entry) =>
-        @addEntry
-          name: entry.functionName
-          file: entry.fileName
-          line: entry.line
-          column: entry.column
-          observed: entry.observed
-          exists: entry.exists
-          projPath: activeProject.getPath()
-          spec: tesslaFile
+        list.sort (a, b) -> a.functionName.localeCompare b.functionName
+        list.forEach (entry) =>
+          @addEntry
+            name: entry.functionName
+            file: entry.fileName
+            line: entry.line
+            column: entry.column
+            observed: entry.observed
+            exists: entry.exists
+            projPath: activeProject.getPath()
+            spec: tesslaFile
+      )

@@ -29,13 +29,26 @@ module.exports=
     })
     toolBarButtons.Stop.setEnabled(no)
     toolBar.addSpacer()
-    toolBar.addButton({
+    toolBarButtons.PullImage = toolBar.addButton({
+      icon: "docker"
+      callback: "tessla2:pull-image"
+      tooltip: "Pull latest TeSSLa image from registry"
+      iconset: "mdi"
+    })
+    toolBarButtons.StartContainer = toolBar.addButton({
+      icon: "cube"
+      callback: "tessla2:start-container"
+      tooltip: "Start and mount TeSSLa container"
+      iconset: "ion"
+    })
+    toolBar.addSpacer()
+    toolBarButtons.SplitView = toolBar.addButton({
       icon: "columns"
       callback: "tessla2:set-up-split-view"
       tooltip: "Set up split view"
       iconset: "fa"
     })
-    toolBar.addButton({
+    toolBarButtons.ResetViews = toolBar.addButton({
       icon: "window-maximize"
       callback: "tessla2:reset-view"
       tooltip: "Restore Views"

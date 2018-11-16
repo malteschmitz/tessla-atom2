@@ -11,6 +11,9 @@ module.exports=
       fileExtension = path.extname sourceFile
       fileLines = ""
 
+      if not fs.existsSync(sourceFile)
+        return names
+
       try
         fileLines = fs.readFileSync(sourceFile).toString().split("\n")
       catch e

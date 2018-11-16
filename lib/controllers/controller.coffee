@@ -34,22 +34,8 @@ module.exports=
       @activeProject.on("project-dir-changed", =>
         if not @pullDone
           return
-        notification = @showIndeterminateProgress(
-          "Creating TeSSLa-Container...",
-          "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
-          no
-        )
-        @lockButtons()
-        @currentlyMounting = yes
         @sidebarView.update(@activeProject)
-        @mountProjectIntoContainer().then(=>
-          notification.dismiss()
-          @unlockButtons()
-          @currentlyMounting = no
-        ).catch((err) =>
-          notification.dismiss()
-          @unlockButtons()
-          @currentlyMounting = no
+        @mountProjectIntoContainer().catch((err) =>
           Logger.err(err)
         )
       )
@@ -58,23 +44,8 @@ module.exports=
     onViewSetUpReady: ->
       Logger.log("Controller.onViewSetUpReady()")
       @pullDone = yes
-      notification = @showIndeterminateProgress(
-        "Creating TeSSLa-Container...",
-        "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
-        no
-      )
-      @lockButtons()
-      @currentlyMounting = yes
       @sidebarView.update(@activeProject)
-      @mountProjectIntoContainer().then(=>
-        notification.dismiss()
-        @unlockButtons()
-        @currentlyMounting = no
-      ).catch((err) =>
-        @unlockButtons()
-        notification.dismiss()
-        @unlockButtons()
-        @currentlyMounting = no
+      @mountProjectIntoContainer().catch((err) =>
         Logger.err(err)
       )
 
@@ -109,7 +80,38 @@ module.exports=
       )
 
 
+    onPullLatestImage: =>
+      @lockAllButtons()
+      if isSet(@runningProcess) or @currentlyMounting
+        @unlockAllButtons()
+        return
+      Logger.log("Pull latest TeSSLa image")
+      new DockerMediator().pull().then((log) =>
+        for item in log
+          if item.type is "entry"
+            @consoleViews.logView.addEntry([item.label, item.msg])
+          if item.type is "listEntry"
+            @consoleViews.logView.addListEntry(item.title, [item.label, item.msg])
+        @unlockAllButtons()
+        @mountProjectIntoContainer().catch((err) =>
+          Logger.err(err)
+        )
+      )
+
+
+    onStartContainer: =>
+      @lockAllButtons()
+      if isSet(@runningProcess) or @currentlyMounting
+        @unlockAllButtons()
+        return
+      @unlockAllButtons()
+      @mountProjectIntoContainer().catch((err) =>
+        Logger.log(err)
+      )
+
+
     restoreViews: =>
+      @lockAllButtons()
       Logger.log("Controller.restoreViews()")
       Promise.all([
         atom.workspace.open @consoleViews.consoleView.getURI()
@@ -119,7 +121,7 @@ module.exports=
         atom.workspace.open @consoleViews.logView.getURI()
         atom.workspace.open FORMATTED_OUTPUT_VIEW
         atom.workspace.open SIDEBAR_VIEW
-      ]).then (views) =>
+      ]).then((views) =>
         viewsContainer = {}
         for view in views
           unless view?.getURI() is FORMATTED_OUTPUT_VIEW or view?.getURI() is SIDEBAR_VIEW
@@ -129,7 +131,7 @@ module.exports=
               when "Errors (TeSSLa)" then viewsContainer.errorsTeSSLaView = view
               when "Warnings" then viewsContainer.warningsView = view
               when "Log" then viewsContainer.logView = view
-              else console.log view
+              else Logger.log(view)
           else
             viewsContainer.sidebarViews = view if view.getURI() is SIDEBAR_VIEW
             viewsContainer.formattedOutputView = view if view.getURI() is FORMATTED_OUTPUT_VIEW
@@ -137,9 +139,15 @@ module.exports=
         for key, value of viewsContainer
           @consoleViews.key = value if @consoleViews.key?
         @addIconsToConsoleTabs()
+        @unlockAllButtons()
+      ).catch((err) =>
+        @unlockAllButtons()
+        Logger.err(err);
+      )
 
 
     setUpSplitView: =>
+      @lockAllButtons()
       Logger.log("Controller.setUpSplitView()");
       projPath = @activeProject.getPath()
       allow = { dotfolders: yes, dotfiles: yes, modules: yes }
@@ -170,10 +178,19 @@ module.exports=
           file = tesslaFiles[i]
           atom.workspace.open(file, { split: "right" })
       )
+      @unlockAllButtons()
+
 
     mountProjectIntoContainer: =>
       return new Promise((resolve, reject) =>
         Logger.log("Controller.mountProjectIntoContainer()")
+        notification = @showIndeterminateProgress(
+          "Creating TeSSLa-Container...",
+          "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
+          no
+        )
+        @lockAllButtons()
+        @currentlyMounting = yes
         if @validActiveProject()
           mediator = new DockerMediator
           mediator.isDockerDaemonRunning()
@@ -181,8 +198,14 @@ module.exports=
           .then((logs) =>
             for log in logs
               @consoleViews.logView.addEntry(log)
+            notification.dismiss()
+            @unlockAllButtons()
+            @currentlyMounting = no
             resolve()
           ).catch((err) =>
+            notification.dismiss()
+            @unlockAllButtons()
+            @currentlyMounting = no
             reject(err)
           )
         else
@@ -190,38 +213,69 @@ module.exports=
       )
 
 
-    isValidTarget: (target) =>
+    checkActiveTargetForTeSSLa: =>
       return new Promise((resolve, reject) =>
-        Logger.log("Controller.validTarget()")
-        if not isSet(target)
-          message = "The project directory does not contain a \"targets.yml\" file."
-          atom.notifications.addError("A target for this action is missing", {
-            detail: message
-          })
-          @consoleViews.logView.addEntry(["message", message])
-          reject(new Error(message))
-        if not isSet(target.tessla)
-          message = "The \"targets.yml\" for this project does not contain a TeSSLa specification."
-          atom.notifications.addError("A TeSSLa specification file is missing", {
-            detail: message
-          })
-          @consoleViews.logView.addEntry(["message", message])
-          reject(new Error(message))
-        if not isSet(target.input) and not isSet(target.c)
-          message = "The \"targets.yml\" for this project does not contain any C or trace sources."
-          atom.notifications.addError("Trace file or C sources are missing", {
-            detail: message
-          })
-          @consoleViews.logView.addEntry(["message", message])
-          reject(new Error(message))
-        if isSet(target.input) and isSet(target.c)
-          message = "The \"targets.yml\" for this project contains a Trace file as well as C sources. Please choose only one of those to options to continue."
-          atom.notifications.addError("Trace file and C sources detected", {
-            detail: message
-          })
-          @consoleViews.logView.addEntry(["message", message])
-          reject(new Error(message))
-        resolve()
+        Logger.log("Controller.checkActiveTargetForTeSSLa()")
+        @activeProject.readTarget().then((target) =>
+          if not isSet(target)
+            reject(new Error("No target is specified in \"targets.yml\""))
+          if not isSet(target.tessla)
+            reject(new Error("No TeSSLa specification found in the active target"))
+          resolve()
+        ).catch((err) =>
+          reject(err)
+        )
+      )
+
+
+    checkActiveTargetForInput: =>
+      return new Promise((resolve, reject) =>
+        Logger.log("Controller.checkActiveTargetForInput()")
+        @activeProject.readTarget().then((target) =>
+          if not isSet(target)
+            reject(new Error("No target is specified in \"targets.yml\""))
+          if not isSet(target.input)
+            reject(new Error("No trace input found in the active target"))
+          if isSet(target.input) and isSet(target.c)
+            reject(new Error("Trace input and C sources specified in the active target. Please use only one of both."))
+          resolve()
+        ).catch((err) =>
+          reject(err)
+        )
+      )
+
+
+    checkActiveTargetForC: =>
+      return new Promise((resolve, reject) =>
+        Logger.log("Controller.checkActiveTargetForInput()")
+        @activeProject.readTarget().then((target) =>
+          if not isSet(target)
+            reject(new Error("No target is specified in \"targets.yml\""))
+          if not isSet(target.c)
+            reject(new Error("No C sources found in the active target"))
+          if isSet(target.input) and isSet(target.c)
+            reject(new Error("Trace input and C sources specified in the active target. Please use only one of both."))
+          resolve()
+        ).catch((err) =>
+          reject(err)
+        )
+      )
+
+
+    checkActiveTargetForCOrInput: =>
+      return new Promise((resolve, reject) =>
+        Logger.log("Controller.checkActiveTargetForInput()")
+        @activeProject.readTarget().then((target) =>
+          if not isSet(target)
+            reject(new Error("No target is specified in \"targets.yml\""))
+          if not isSet(target.c) and not isSet(target.input)
+            reject(new Error("No C sources or trace input found in the active target"))
+          if isSet(target.input) and isSet(target.c)
+            reject(new Error("Trace input and C sources specified in the active target. Please use only one of both."))
+          resolve()
+        ).catch((err) =>
+          reject(err)
+        )
       )
 
 
@@ -249,17 +303,17 @@ module.exports=
       return new Promise((resolve, reject) =>
         if @currentlyMounting
           message = "You can not start process until the docker container is properly connected to the current project."
-          atom.notifications.addWarning("Could start process", {
-            detail: message
-          })
-          @consoleViews.warningsView.addEntry([message])
+          # atom.notifications.addWarning("Could start process", {
+          #   detail: message
+          # })
+          # @consoleViews.warningsView.addEntry([message])
           reject(new Error(message))
         else if isSet(@runningProcess)
           message = "You can not start another process if there is another process in execution."
-          atom.notifications.addWarning("Could start process", {
-            detail: message
-          })
-          @consoleViews.warningsView.addEntry([message])
+          # atom.notifications.addWarning("Could start process", {
+          #   detail: message
+          # })
+          # @consoleViews.warningsView.addEntry([message])
           reject(new Error("There is already a process in execution!"))
         else
           resolve()
@@ -272,7 +326,22 @@ module.exports=
         @toolbarButtons.CreateTrace.setEnabled(no)
         @toolbarButtons.BuildAndRunCCode.setEnabled(no)
         @toolbarButtons.BuildAndRunProject.setEnabled(no)
+        @toolbarButtons.StartContainer.setEnabled(no)
+        @toolbarButtons.PullImage.setEnabled(no)
         @toolbarButtons.Stop.setEnabled(yes)
+
+
+    lockAllButtons: =>
+      Logger.log("Controller.lockAllButtons()")
+      if isSet(@toolbarButtons)
+        @toolbarButtons.CreateTrace.setEnabled(no)
+        @toolbarButtons.BuildAndRunCCode.setEnabled(no)
+        @toolbarButtons.BuildAndRunProject.setEnabled(no)
+        @toolbarButtons.StartContainer.setEnabled(no)
+        @toolbarButtons.PullImage.setEnabled(no)
+        @toolbarButtons.Stop.setEnabled(no)
+        @toolbarButtons.SplitView.setEnabled(no)
+        @toolbarButtons.ResetViews.setEnabled(no)
 
 
     unlockButtons: =>
@@ -281,7 +350,21 @@ module.exports=
         @toolbarButtons.CreateTrace.setEnabled(yes)
         @toolbarButtons.BuildAndRunCCode.setEnabled(yes)
         @toolbarButtons.BuildAndRunProject.setEnabled(yes)
+        @toolbarButtons.StartContainer.setEnabled(yes)
+        @toolbarButtons.PullImage.setEnabled(yes)
         @toolbarButtons.Stop.setEnabled(no)
+
+    unlockAllButtons: =>
+      Logger.log("Controller.unlockAllButtons()")
+      if isSet(@toolbarButtons)
+        @toolbarButtons.CreateTrace.setEnabled(yes)
+        @toolbarButtons.BuildAndRunCCode.setEnabled(yes)
+        @toolbarButtons.BuildAndRunProject.setEnabled(yes)
+        @toolbarButtons.StartContainer.setEnabled(yes)
+        @toolbarButtons.PullImage.setEnabled(yes)
+        @toolbarButtons.Stop.setEnabled(yes)
+        @toolbarButtons.SplitView.setEnabled(yes)
+        @toolbarButtons.ResetViews.setEnabled(yes)
 
 
     onCreateTrace: =>
@@ -294,10 +377,11 @@ module.exports=
         else
           return new Promise((resolve, reject) => resolve())
       ).then(=>
-        return @isValidTarget(@activeProject.getTarget())
+        return @checkActiveTargetForC()
       ).then(=>
+        return @activeProject.readTarget()
+      ).then((target) =>
         # Get information about c and spec file
-        target = @activeProject.getTarget()
         if not isSet(target.c)
           message = "There are no C sources specified for this target. Only valid C programs can be instrumented!"
           atom.notifications.addError("Could not create trace file", {
@@ -308,7 +392,7 @@ module.exports=
           return
         # information about the file to create
         hadError = no
-        traceName = "#{path.basename(@activeProject.getPath()).replace(/\s/g, "_")}.input"
+        traceName = "#{target.binName}.input"
         traceFile = fs.createWriteStream(path.join(@activeProject.getPath(), traceName), { flags: "w" })
         traceContent = []
         # exec command
@@ -365,6 +449,9 @@ module.exports=
             @formattedOutputView.update(traceContent)
         )
       ).catch((err) =>
+        message = err.message
+        atom.notifications.addError("Could not create trace file", { detail: message })
+        @consoleViews.logView.addEntry(["message", message])
         Logger.err(err)
       )
 
@@ -380,12 +467,13 @@ module.exports=
         else
           return new Promise((resolve, reject) => resolve())
       ).then(=>
-        return @isValidTarget(@activeProject.getTarget())
+        return @checkActiveTargetForC()
       ).then(=>
+        return @activeProject.readTarget()
+      ).then((target) =>
         # Get information about c and spec file
-        target = @activeProject.getTarget()
         if not isSet(target.c)
-          message = "There are no C sources to compile and execute are specified for this target!"
+          message = "Target does not specifie C sources to compile and execute!"
           atom.notifications.addError("Could not compile and run C code", {
             detail: message
           })
@@ -394,16 +482,16 @@ module.exports=
           return
         hadError = no
         # exec command
-        binName = "#{path.basename(@activeProject.getPath()).replace(/\s/g, "_")}"
         dockerArgs = [
           "exec",
           TESSLA_CONTAINER_NAME,
           "clang",
-          target.c.join(" "),
           "-o",
-          path.join("bin", binName)
+          path.join("bin", target.binName)
         ]
-        notification = @showIndeterminateProgress("Compiling C Sources", "Compiling C source files: #{target.c.map((file) => "\"#{file}\"").join(" ")}")
+        for file in target.c
+          dockerArgs.push(file)
+        notification = @showIndeterminateProgress("Coameling C Sources", "Compiling C source files: #{target.c.map((file) => "\"#{file}\"").join(" ")}")
         @lockButtons()
         @runningProcess = compile = childProcess.spawn("docker", dockerArgs)
         compile.stderr.on("data", (data) =>
@@ -429,8 +517,8 @@ module.exports=
             @consoleViews.logView.addEntry(["message", message])
           else
             hadError = no
-            dockerArgs = ["exec", TESSLA_CONTAINER_NAME, path.join("bin", binName)]
-            notification = @showIndeterminateProgress("Executing binary", "Executing binary: \"#{path.join("bin", binName)}\"")
+            dockerArgs = ["exec", TESSLA_CONTAINER_NAME, path.join("bin", target.binName)]
+            notification = @showIndeterminateProgress("Executing binary", "Executing binary: \"#{path.join("bin", target.binName)}\"")
             @lockButtons()
             @runningProcess = program = childProcess.spawn("docker", dockerArgs)
             program.stdout.on("data", (data) =>
@@ -467,6 +555,9 @@ module.exports=
             )
         )
       ).catch((err) =>
+        message = err.message
+        atom.notifications.addError("Could not compile and execute C sources", { detail: message })
+        @consoleViews.logView.addEntry(["message", message])
         Logger.err(err)
       )
 
@@ -482,10 +573,13 @@ module.exports=
         else
           return new Promise((resolve, reject) => resolve())
       ).then(=>
-        return @isValidTarget(@activeProject.getTarget())
+        return @checkActiveTargetForTeSSLa()
       ).then(=>
+        return @checkActiveTargetForCOrInput()
+      ).then(=>
+        return @activeProject.readTarget()
+      ).then((target) =>
         # Get information about c and spec file
-        target = @activeProject.getTarget()
         hadError = no
         dockerArgs = ["exec", TESSLA_CONTAINER_NAME]
         if isSet(target.c)
@@ -547,6 +641,9 @@ module.exports=
             @formattedOutputView.update(traceContent)
         )
       ).catch((err) =>
+        message = err.message
+        atom.notifications.addError("Could not verify project files", { detail: message })
+        @consoleViews.logView.addEntry(["message", message])
         Logger.err(err)
       )
 

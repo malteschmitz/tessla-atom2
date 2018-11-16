@@ -5,6 +5,7 @@ childProcess = require("child_process")
 
 {TESSLA_CONTAINER_NAME} = require("../utils/constants")
 {isSet} = require("../utils/utils")
+Logger = require("../utils/logger")
 
 module.exports=
   class TeSSLaLinter
@@ -29,7 +30,7 @@ module.exports=
 
         args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
         command = "docker #{args.join " "}"
-        # console.log(command)
+        Logger.log("Linter.onLint()", command)
 
         editorPath = textEditor.getPath()
         verifier = childProcess.spawn("docker", args)
@@ -38,17 +39,15 @@ module.exports=
         warnings = []
 
         verifier.stdout.on "data", (data) ->
-          console.log "stdout: " + data.toString()
+          Logger.log("Linter.onLint()", "verifier stdout: " + data.toString())
         verifier.stderr.on "data", (data) ->
-          console.log(data.toString());
+          Logger.log("Linter.onLint()", "verifier stderr: " + data.toString())
           for line in data.toString().split("\n")
             lineIsError = line.substr(0, 5) is "Error"
             lineIsWarning = line.substr(0, 7) is "Warning"
             errors.push(line) if line isnt "" and lineIsError
             warnings.push(line) if line isnt "" and lineIsWarning
         verifier.on "close", () ->
-          # console.log("closed verifier")
-          # console.log(errors)
           # get an array of items
           items = []
           # regex

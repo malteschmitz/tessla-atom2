@@ -65,6 +65,9 @@ module.exports=
           "tessla2:build-and-run-c-code": @controller.onCompileAndRunCCode
           "tessla2:verify-spec": @controller.onCompileAndRunProject
           "tessla2:stop-current-process": @controller.onStopRunningProcess
+          # docker stuff
+          "tessla2:pull-image": @controller.onPullLatestImage
+          "tessla2:start-container": @controller.onStartContainer
         }),
         # add custom openers for custom UI elements
         atom.workspace.addOpener((URI) ->
