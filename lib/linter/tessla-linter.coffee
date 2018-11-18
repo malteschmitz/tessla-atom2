@@ -21,13 +21,6 @@ module.exports=
         if not isSet(textEditor) or not isSet(textEditor.getPath())
           return
 
-        containerDir = path.join(os.homedir(), ".tessla-env")
-        stdlibTessla = path.join(path.dirname(textEditor.getPath()), "stdlib.tessla")
-
-        fs.copySync(textEditor.getPath(), path.join(containerDir, textEditor.getTitle()))
-        if fs.existsSync(stdlibTessla)
-          fs.copySync(stdlibTessla, path.join(containerDir, "stdlib.tessla"))
-
         args = ["exec", TESSLA_CONTAINER_NAME, "tessla", "#{textEditor.getTitle()}", "--verify-only"]
         command = "docker #{args.join " "}"
         Logger.log("Linter.onLint()", command)

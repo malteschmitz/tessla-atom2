@@ -7,4 +7,4 @@ module.exports=
   TESSLA_IMAGE_NAME: "registry.mlte.de/isp/tessla-docker"
   TESSLA_REGISTRY: "registry.mlte.de/isp/tessla-docker:latest"
   TESSLA_CONTAINER_NAME: "tessla2-docker"
-  DEBUG: yes
+  DEBUG: no

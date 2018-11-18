@@ -4,6 +4,7 @@ module.exports=
   class SidebarViewElement
 
     constructor: ({ name: name, file: file, line: line, column: col, observed: o, exists: e, path: p, spec: spec }) ->
+      @projectPath = p
       observed = o ? no
       exists = e ? no
 
@@ -59,15 +60,20 @@ module.exports=
 
 
     onShowFunction: (file, line, column) ->
-      console.log "jump to file #{file} line #{line}, col #{column}"
+      atom.workspace.open(path.join(@projectPath, file), {
+        split: "left",
+        searchAllPanes: yes,
+        initialLine: parseInt(line) - 1,
+        initialColumn: parseInt(column) - 1
+      })
 
 
     onAddTest: ({ file, functionName, projectPath, spec }, event) ->
       atom.workspace.open(spec, { split: "right", searchAllPanes: yes }).then (editor) ->
         editor.setCursorBufferPosition [editor.getLineCount(), 0]
 
-        text  = "\n# Inserted test case automatically in the first tessla file that was found"
-        text += "\ndef calls_#{functionName} : Events[Unit] := function_call(\"#{functionName}\")"
+        text  = "\n# Trace function calls for #{functionName}"
+        text += "\ndef calls_#{functionName}: Events[Unit] := function_call(\"#{functionName}\")"
 
         editor.save() if editor.insertText text, { select: yes, autoIndent: yes }
 

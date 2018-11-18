@@ -21,12 +21,13 @@ module.exports=
 
       if fileExtension is ".c"
         regex = ///
+          ^\s*                      # the beginning of the line
           (?:[a-zA-Z][_\w]*)        # ungrouped match that starts with a letter - This is the return type of the function
           (?:\s*[*]?\s+|\s+[*]\s*)  # optional an asterics for a pointer can follow
           ([a-zA-Z][_\w]*)          # followed by the match for the actual function name
           \s*                       # followed by any number of spaces
           \(                        # and finally the opening parenthesis
-          ///g
+          ///gm
 
         lineCnt = 0
 

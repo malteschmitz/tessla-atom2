@@ -39,46 +39,49 @@
               "command": "tessla2:deactivate"
             },
             {
+              "label": "Toggle",
+              "command": "tessla2:toggle"
+            },
+            {
               "type": "separator"
             },
             {
-              "label": "Build C code",
-              "command": "tessla2:build-c-code"
+              "label": "Set Up Split View",
+              "command": "tessla2:set-up-split-view"
             },
             {
-              "label": "Create trace file",
+              "label": "Reset View",
+              "command": "tessla2:reset-view"
+            },
+            {
+              "type": "separator"
+            },
+            {
+              "label": "Create Trace File",
               "command": "tessla2:create-trace"
             },
             {
-              "label": "Run C code",
-              "command": "tessla2:run-c-code"
-            },
-            {
-              "label": "Build and Run C code",
+              "label": "Build And Run C Code",
               "command": "tessla2:build-and-run-c-code"
             },
             {
-              "label": "Build and Run Project",
-              "command": "tessla2:build-and-run-project"
+              "label": "Verify Project Files",
+              "command": "tessla2:verify-spec"
             },
             {
-              "label": "Run Project by Trace",
-              "command": "tessla2:run-project-by-trace"
-            },
-            {
-              "label": "Stop current process",
+              "label": "Stop Current Process",
               "command": "tessla2:stop-current-process"
             },
             {
               "type": "separator"
             },
             {
-              "label": "Set up split view",
-              "command": "tessla2:set-up-split-view"
+              "label": "Pull Latest TeSSLa Image",
+              "command": "tessla2:pull-image"
             },
             {
-              "label": "Restore all view Components",
-              "command": "tessla2:reset-view"
+              "label": "Start TeSSLa Container",
+              "command": "tessla2:start-container"
             }
           ]
         }

@@ -66,6 +66,16 @@ module.exports=
       Logger.log("Controller.connectToConsoleViews()")
 
 
+    saveWorkspace: =>
+      Logger.log("Controller.saveWorkspace()")
+      @sidebarView.update(@activeProject)
+      activeEditor = atom.workspace.getActiveTextEditor()
+      editors = atom.workspace.getTextEditors()
+      for editor in editors
+        if editor.getPath() isnt activeEditor.getPath()
+          editor.save()
+      activeEditor.save()
+
     addIconsToConsoleTabs: =>
       Logger.log("Controller.addIconsToConsoleTabs()")
       viewTabs = document.querySelectorAll(".tab[data-type=FlexiblePanelView]")
@@ -184,6 +194,8 @@ module.exports=
     mountProjectIntoContainer: =>
       return new Promise((resolve, reject) =>
         Logger.log("Controller.mountProjectIntoContainer()")
+        if @currentlyMounting
+          return
         notification = @showIndeterminateProgress(
           "Creating TeSSLa-Container...",
           "Creating a Docker TeSSLa-Container and mount \"#{@activeProject.getPath()}\" into container. This may take a few seconds.",
@@ -362,12 +374,13 @@ module.exports=
         @toolbarButtons.BuildAndRunProject.setEnabled(yes)
         @toolbarButtons.StartContainer.setEnabled(yes)
         @toolbarButtons.PullImage.setEnabled(yes)
-        @toolbarButtons.Stop.setEnabled(yes)
+        @toolbarButtons.Stop.setEnabled(no)
         @toolbarButtons.SplitView.setEnabled(yes)
         @toolbarButtons.ResetViews.setEnabled(yes)
 
 
     onCreateTrace: =>
+      @saveWorkspace()
       mediator = new DockerMediator
       @noProcessRunning().then(=>
         return mediator.isTeSSLaContainerRunning()
@@ -457,6 +470,7 @@ module.exports=
 
 
     onCompileAndRunCCode: =>
+      @saveWorkspace()
       Logger.log("Controller.onCompileAndRunCCode()")
       mediator = new DockerMediator
       @noProcessRunning().then(=>
@@ -563,6 +577,7 @@ module.exports=
 
 
     onCompileAndRunProject: =>
+      @saveWorkspace()
       Logger.log("Controller.onCompileAndRunProject()")
       mediator = new DockerMediator
       @noProcessRunning().then(=>

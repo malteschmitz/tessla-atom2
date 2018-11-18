@@ -20,33 +20,33 @@
     'name': 'keyword.control'
   },
   {
-    'comment': 'Library functions'
-    'match': '\\b(code_line_exec|function_call|function_return)\\b'
-    'name': 'support.function'
-  },
-  {
-    'comment': 'Detect functions'
-    'match': '\\b(\\w[\\w\\d_-]*)\\s*\\('
+    'comment': 'Other keywords'
+    'match': '\\b(in|out|def|define)\\s+(\\w[\\w\\d_]*)?'
     'captures':
       1:
-        'name': 'entity.name.function'
+        'name': 'keyword.other'
+      2:
+        'name': 'variable.other'
   },
   {
-    'comment': 'Language constants'
-    'match': '\\b(true|false)\\b'
-    'name': 'constant.language'
-  },
-  {
-    'comment': 'Numeric floating point values'
-    'match': '[^a-zA-Z]([+-]?\\d+(?:\\.\\d+)?)'
-    'captures':
-      1:
-        'name': 'constant.numeric'
+    'comment': 'param type'
+    'match': '\\b(\\w[\\w\\d_]*)\\s*:\\s*(?!=)'
+    'name': 'variable.parameter'
   },
   {
     'comment': 'Datatypes'
     'match': '\\b(Signal|Events|Int|Float|String|Boolean|Bool|Unit)\\b'
     'name': 'storage.type'
+  },
+  {
+    'comment': 'Library functions'
+    'match': '\\b(code_line_exec|function_call|function_return)\\b'
+    'name': 'support.function'
+  },
+  {
+    'comment': 'Language constants'
+    'match': '\\b(true|false)\\b'
+    'name': 'constant.language'
   },
   {
     'comment': 'Assignment operator'
@@ -55,66 +55,27 @@
   },
   {
     'comment': 'Arithmetic operators'
-    'match': '\\s*(\\+|-|\\^|\\*|\\/|&|\\|<<|>>)\\s*'
+    'match': '\\b(\\+|-|\\^|\\*|\\/|&|\\|<<|>>)\\b'
     'name': 'keyword.operator'
   },
   {
     'comment': 'Comparison operator'
-    'match': '\\s*(<|>|!=|==|>=|<=|\\|\\||&&)\\s*'
+    'match': '\\b(<|>|!=|==|>=|<=|\\|\\||&&)\\b'
     'name': 'keyword.operator.comparison'
   },
   {
     'comment': 'Comparison operator'
-    'match': '\\s*(!|~)\\s*'
+    'match': '\\b(!|~)\\b'
     'name': 'keyword.operator.unary'
   },
   {
-    'comment': 'Variable names'
-    'match': '(def|define)\\s+([\\w\\d_\\.]+)\\s*(?=:)'
-    'captures':
-      1:
-        'name': 'keyword.other'
-      2:
-        'name': 'variable.other'
+    'comment': 'Numbers'
+    'match': '((?:\\b\\d*\\.?\\d+(?:e[+-]\\d+)?|(?:x[0123456789abcdefABCDEF]+)|(?:b[01]+)|(?:o[01234567]+)\\b))'
+    'name': 'constant.numeric'
   },
   {
-    'comment': 'Function names'
-    'begin': '(def|define)\\s+([\\w\\d_\\.]+)\\s*(?=\\()'
-    'beginCaptures':
-      1:
-        'name': 'keyword.other'
-      2:
-        'name': 'entity.name.function'
-    'patterns': [
-      {
-        'comment': 'Function parameters'
-        'match': '([\\w\\d_]+)\\s*(?=,|\\))'
-        'captures':
-          1:
-            'name': 'variable.parameter'
-      }
-    ]
-    'end': '\\)\\s*(:=)'
-    'endCaptures':
-      1:
-        'name': 'keyword.operator.assignment'
-  },
-  {
-    'comment': 'In-streams'
-    'match': '\\b(in)\\s+([\\w\\d_\\.]+)'
-    'captures':
-      1:
-        'name': 'keyword.other'
-      2:
-        'name': 'variable.other'
-  },
-  {
-    'comment': 'Out-streams'
-    'match': '\\b(out)\\s+([\\w\\d_\\.]+)'
-    'captures':
-      1:
-        'name': 'keyword.other'
-      2:
-        'name': 'variable.other'
+    'comment': 'Numbers'
+    'match': '@(\\w[\\w\\d_]*)'
+    'name': 'keyword.other'
   }
 ]
