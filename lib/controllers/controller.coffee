@@ -40,6 +40,10 @@ module.exports=
         )
       )
 
+      @activeProject.on("targets-changed", =>
+        @sidebarView.update(@activeProject)
+      )
+
 
     onViewSetUpReady: ->
       Logger.log("Controller.onViewSetUpReady()")
@@ -162,6 +166,7 @@ module.exports=
       projPath = @activeProject.getPath()
       allow = { dotfolders: yes, dotfiles: yes, modules: yes }
       cFiles = scanFolder(@activeProject.getPath(), ".c", yes, allow)
+      cFiles = cFiles.concat(scanFolder(@activeProject.getPath(), ".input", yes, allow))
       tesslaFiles = scanFolder(@activeProject.getPath(), ".tessla", yes, allow)
 
       if cFiles is null or cFiles is undefined or cFiles.length is 0 or tesslaFiles is null or tesslaFiles is undefined or tesslaFiles.length is 0

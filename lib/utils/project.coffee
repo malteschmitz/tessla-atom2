@@ -133,9 +133,11 @@ module.exports=
         .then(@checkTargetsYAML)
         .then(@parseTargets)
         .then(=>
+          fs.watchFile(path.join(@path, "targets.yml"), (curr, prev) =>
+            @emit("targets-changed")
+          )
           @emit("project-dir-changed")
-        )
-        .catch((err) =>
+        ).catch((err) =>
           console.log("error while project structure setup")
           console.log(err)
         )

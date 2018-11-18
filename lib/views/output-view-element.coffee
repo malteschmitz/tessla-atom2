@@ -22,7 +22,7 @@ module.exports=
 
         cnt = document.createElement "span"
         cnt.classList.add "itshape", "subtle", "align-right"
-        cnt.innerHTML = "(cnt: #{content.length})"
+        cnt.innerHTML = "(count: #{content.length})"
 
         itemText.appendChild identifier
         itemText.appendChild cnt
