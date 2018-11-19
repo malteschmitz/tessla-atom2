@@ -237,7 +237,7 @@ module.exports=
           if not isSet(target)
             reject(new Error("No target is specified in \"targets.yml\""))
           if not isSet(target.tessla)
-            reject(new Error("No TeSSLa specification found in the active target"))
+            reject(new Error("No TeSSLa specification in the active target found"))
           resolve()
         ).catch((err) =>
           reject(err)
@@ -460,10 +460,10 @@ module.exports=
             })
             @consoleViews.logView.addEntry(["message", message])
           else
-            atom.notifications.addSuccess("Trace \"#{path.join(@activeProject.getPath(), traceName)}\" created", {
+            atom.notifications.addSuccess("Trace file \"#{path.join(@activeProject.getPath(), traceName)}\" created", {
               detail: message
             })
-            @consoleViews.logView.addEntry(["message", "Trace \"#{path.join(@activeProject.getPath(), traceName)}\" created"])
+            @consoleViews.logView.addEntry(["message", "Trace file \"#{path.join(@activeProject.getPath(), traceName)}\" created"])
             @formattedOutputView.update(traceContent)
         )
       ).catch((err) =>

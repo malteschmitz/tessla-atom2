@@ -1,4 +1,4 @@
-# TeSSLa-IDE Atom-package
+# TeSSLa2 Atom-package
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
@@ -84,50 +84,23 @@ To compile and run binaries compiled from source code the tool bar provides some
 ## Menu
 
 <p align="center">
-  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/menu.png?raw=true">
+  <img src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/menu.png?raw=true">
 </p>
-In the "packages" menu there is a submenu of "TeSSLa" containing some actions for this package. For each menu entry the keymap binding which are fully listed and described in the keymap bindings section are shown on the right. The entries can also be found in the tool-bar on the right side of the workspace.
-
-
-## Configuration
-
-There are some settings that are important to set before you can use all features this packages provides:
-- _Path to clang compiler_: This should be the path were the clang compiler is located on your system.
-
- **Note:** on MacOS/OS X the clang compiler installed by Xcode/Xcode command line tools does not have the LLVM extensions. To be able to use all features provided by this package you have to build clang by your self.
-
-- _Path to instrument functions library_: This should be the path to the `libInstrumentFunctions.so`. Further information can be found [here](https://github.com/imdea-software/LLVM_Instrumentation_Pass).
-
-- _Path to TeSSLa compiler_: This should be the path were the TeSSLa compiler is located on your system.
-
-- _Path to TeSSLa server_: This should be the path were the TeSSLaServer is located on your system. The TeSSLaServer and further information about it can be found [here](https://github.com/imdea-software/TesslaServer)
-
-- _zlog string format for variables_: This represents the format of how variables are formatted in the `.trace`-files.
-
- **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
-
-- _zlog string format for function calls_: This represents the format of how function calls are formatted in the `.trace`-files.
-
- **Note:** The default value will work for the TeSSLaServer linked above. Changing this value may cause problems when the TeSSLaServer is trying to interprete the `.trace` file.
-
-- _Animation speed_: This value will set the speed of animations triggered in this package. The value represents a duration milliseconds
-  
-<p align="center">
-  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/settings.png?raw=true">
-</p>
+In the "packages" menu there is a submenu for "TeSSLa2" which contains package actions. For each menu entry the corresponding keymap bindings are shown if available. Most of the actions can also be found in the tool bar on the right side of the workspace.
 
 ## Keymap bindings
 
 The TeSSLa package provides some keymap bindings to improve the work-flow. The following list contains all provided keymap bindings and their resulting effects.
 
-| Keymap                            | Effect                            |
+| Keymap Linux & MacOS/Windows      | Effect                            |
 |:----------------------------------|:----------------------------------|
-| `cmd-shift-t`                     | Toggles the package               |
-| `cmd-b`                           | This keymap causes the package to build a binary compiled from C code that was found in the active project |
-| `cmd-r`                           | This keymap causes the package to build and run a binary compiled from C code that was found in the active project |
-| `cmd-t`                           | This keymap causes the package to pass step 1 to 8 from the [Tool Bar section](#tool-bar) |
-| `ctrl-c`                          | This keymap causes the package to stop the process currently spawned and monitored by this package |
-| `cmd-enter`                       | This keymap causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed |
+| `cmd-shift-t`/`ctrl-shift-t`      | Toggle the package                |
+| `cmd-shift-d`/`ctrl-shift-d`      | Deactivate the package            |
+| `cmd-r`/`ctrl-r`                  | Build and run C sources           |
+| `cmd-p`/`ctrl-p`                  | Create trace from C sources       |
+| `cmd-t`/`ctrl-t`                  | Verify C sources by TeSSLa specification |
+| `ctrl-c`/`ctrl-shift-c`           | Stop currently running process |
+| `cmd-enter`/`ctrl-enter`          | Setup split view |
 
 ## Supported Commands
 
@@ -135,18 +108,20 @@ There are some global commands other packages can trigger or subscribe to. A lis
 
 | Command                           | Description                       |
 |:----------------------------------|:----------------------------------|
-| `tessla:toggle`                   | This command causes the package to toggle all components of the package including sidebar and message panel |
-| `tessla:set-up-split-view`        | This command causes the package to set up the split view. Therefore all C files of the active project are put to the left side and all TeSSLa files are put the the right side. If no files are found a notification will be displayed |
-| `tessla:toggle-sidebar`           | This command causes the package to toggle the sidebar |
-| `tessla:toggle-message-panel`     | This command causes the package to toggle the message panel |
-| `tessla:build-and-run-c-code`     | This command causes the package to build and run a binary compiled from C code that was found in the active project |
-| `tessla:build-c-code`             | This command causes the package to build a binary compiled from C code that was found in the active project |
-| `tessla:run-c-code`               | This command causes the package to run the binary `<project-name>` in `<project-directory>/build/` |
-| `tessla:stop-current-process`     | This command causes the package to stop the process currently spawned and monitored by this package |
-| `tessla:build-and-run-project`    | This command causes the package to pass step 1 to 8 from the [Tool Bar section](#tool-bar) |
+| `tessla2:activate`                | Activate the package. All views are created and the tessla2-docker container is started |
+| `tessla2:deactivate`              | Deactivate the package. Remove all view components and stop the running tessla2-docker container |
+| `tessla2:toggle`                  | Hide all view components and disable linting and autocompletion features |
+| `tessla2:set-up-split-view`       | Close all text editors and create a split view where all `*.c` and `*.input` files are opened on the left side and all `.tessla` files are opened on the right side of the workspace. |
+| `tessla2:reset-view`              | Check if all view components are still visible and reopen views if already closed |
+| `tessla2:create-trace`            | Create a `.input` file from C sources found in `targets.yml`s active target |
+| `tessla2:build-and-run-c-code`    | Build and run C sources form `targets.yml`s active target |
+| `tessla2:verify-spec`             | Build and run C sources and verify resulting trace by TeSSLa specification mentioned in `targets.yml`s active target |
+| `tessla2:stop-current-process`    | Stop running process |
+| `tessla2:pull-image`              | Pull the latest version of the TeSSLa2 image from the registry and (re)start `tessla2-docker` container |
+| `tessla2:start-container`         | (Re)start `tessla2-docker` container |
 
 ## Authors
 
-- [Denis-Michael Lux](https://www.github.com/dmlux/)<sup>(owner)</sup>
+- [Malte Schmitz](https://www.mlte.de)<sup>(owner)</sup>
+- [Denis-Michael Lux](https://www.github.com/dmlux/)
 - Alexandra Lassota
-- [Malte Schmitz](https://www.mlte.de)
