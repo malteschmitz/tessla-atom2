@@ -31,7 +31,9 @@
   {
     'comment': 'param type'
     'match': '\\b(\\w[\\w\\d_]*)\\s*:\\s*(?!=)'
-    'name': 'variable.parameter'
+    'captures':
+      1:
+        'name': 'variable.parameter'
   },
   {
     'comment': 'Datatypes'
