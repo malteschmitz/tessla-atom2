@@ -2,7 +2,6 @@
 path = require "path"
 fs = require "fs"
 childProcess = require("child_process")
-converter = new showdown.Converter()
 Logger = require("../utils/logger")
 {isSet} = require("../utils/utils")
 {TESSLA_CONTAINER_NAME} = require("../utils/constants")

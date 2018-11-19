@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/version-1.1.2-orange.svg" alt="Package version">
+  <img src="https://img.shields.io/badge/version-1.1.3-orange.svg" alt="Package version">
 </p>
 
 <p align="center">
