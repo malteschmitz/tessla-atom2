@@ -9,45 +9,31 @@
   <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/screenshot.png?raw=true">
 </p>
 
-## Introduction
+## Summary
 
-This Atom-packages provides some IDE-like functions for C-Code and the TeSSLa LTL. There are two great GUI extensions that the package provides. In Addition to the GUI components there is also a grammar file for the TeSSLa LTL provided to enable syntax highlighting for files having the `.tessla` extension. Make sure to disable other packages providing syntax highlighting for `.tessla` files to get the correct source code visualization.
+The `tessla2-atom` package extends Atom by IDE features. The package contains C and TeSSLa linting as well as TeSSLa syntax highlighting and TeSSLa autocompletion for keywords, constants, types and standard library functions. The GUI is extended by a console consisting of compiler information, output view, error views, a linting view and a log view. Two sidebar docks providing information about generated traces and a list of all found C functions within the project. The sidebar view also provides test case generation for all found C functions. A toolbar for all actions and commands is also supported. To manage build targets and files that belong to those targets a `targets.yml` file is created in the project directory by the `tessla2-docker` package.
 
 ## Dependencies
-
-To use the full range of functions that are provided by this package some dependencies are needed:
-- [InstrumentFunctions library](https://github.com/imdea-software/LLVM_Instrumentation_Pass)
-- [TeSSLaServer](https://github.com/imdea-software/TesslaServer)
 
 The following dependencies are installed automatically by this package:
 - [[Atom] tool-bar](https://atom.io/packages/tool-bar)
 - [[Atom] Linter](https://atom.io/packages/linter)
 - [[Atom] linter-gcc](https://atom.io/packages/linter-gcc)
+- [[Atom] flexible-panels](https://atom.io/packages/flexible-panels)
 
 The icons that are used in this package are provided by:
 - [ionicons](http://ionicons.com)
 - [Font Awesome](http://fontawesome.io)
 
-
-**Note:** The correct paths to the compilers and the TeSSLaServer as well as the external libraries that are listed above should be set first. The correct paths can be set in the settings pane of this package. To get to the settings pane open `Preferences > Packages > tessla > settings`. If there are missing paths some functions in some circumstances can not be used. Each value has a default fallback which is in some cases the correct path.
-
 ## Sidebar
 
 <img align="left" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/sidebar.png?raw=true">
 
-The sidebar is divided into two seperate areas. Each border inside this panel works as a resize handle which is also indicated by the changing cursor appearance.
+The sidebar is divided into two docks:
 
-The upper area shows C functions that appear in the C files and C functions that are observed from within the TeSSLa sources of the current project. Each C file that can be found recursively in the current project directory is considered when fetching function singnatures. On the other hand only the first found TeSSLa source file is used by the IDE.
+The "C Functions" dock contains all C functions that where found in the C files of the project. The considered C files are extracted from the `targets.yml` file. If the active target does not contain certain C source files the functions declared within these files will not be considered in the sidebar. Each function gets its own line within  the sidebar. The function elements in the sidebar are clickable and will open the file the functions were declared in and move the cursor the right spot. Additionally a plus button in front of each function allows the user to create a function call event in the TeSSLa specification mentioned in the `targets.yml`. In addition to the function name the concrete file as well as the line and column where the function appears in the file is placed on the right side of the line.
 
-Both lists providing some special functions to the user. The circled plus buttons inserting one line of TeSSLa code in the TeSSLa source file to observe the function calls in the compiled C binary. Next to the plus buttons there are _f(x)_ tags that can be colored in three different colors
-
-When the the function tag is colored blue the function is not observed by the TeSSLa source code. When the function tag is colored green the function is observed by the TeSSLa source code and when the function tag is colored red the function is observed by the TeSSLa source code but does not seem to exist in the considered C sources.
-
-The rightmost text in each row indicates the position where the function was found in the C sources. The format is `filename(line:character)`, where the filename is the path to the file relative to the project root.
-
-The lower area of the sidebar contains the formatted output from the TeSSLaServer. The output is a list that contains each output identifier and the value that the identifier evaluates to at a certain time. Each output list is initially hidden and can be displayed by clicking the identifier. The entries within the list are displayed in two columns. The left column shows the time when the identifier evaluates to the value in the right column. The time format is `HH:MM:SS.mmm`. 
-
-The border above the lower area contains a resize handle which can be used to change the space each area takes up. The whole sidebar can be resized as well as both areas inside of it. On the left edge there is a resize handle to adjust the width. The sidebar has a minimum width and a maximum width that can not be exceeded.
+The "Output Streams" dock contains all outputs from the last performed action in a formatted way. All outputs are grouped by event name. Each event group contain all outputs as a list. The list entries contain the timestamp and the value. The list is ordered by the timestamp in such a way that the smallest timestamp is on top of the list and the biggest timestamp on the end. The lists are collapsed by default but can be expended by click. Buttons to collapse and expand all lists are on top of the dock.
 
 ## Message Panel
 
