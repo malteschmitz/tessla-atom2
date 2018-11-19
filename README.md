@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/screenshot.png?raw=true">
+  <img src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/screenshot.png?raw=true">
 </p>
 
 ## Summary
