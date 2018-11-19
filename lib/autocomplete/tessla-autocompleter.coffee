@@ -1,7 +1,6 @@
 
 path = require "path"
 fs = require "fs"
-showdown = require "showdown"
 childProcess = require("child_process")
 converter = new showdown.Converter()
 Logger = require("../utils/logger")

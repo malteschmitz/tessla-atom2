@@ -2,7 +2,7 @@
   "name": "tessla2",
   "main": "./lib/tessla",
   "version": "1.1.1",
-  "description": "This packages provides some IDE-like functions for C-Code and TeSSLa specifications",
+  "description": "This packages provides some IDE feautures for C-Code and TeSSLa specifications",
   "keywords": [
     "tessla",
     "tessla-ide",
@@ -25,13 +25,9 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "dockerode": "^2.5.3",
-    "fs": "0.0.1-security",
     "fs-extra": "^3.0.1",
     "os": "^0.1.1",
-    "path": "^0.12.7",
     "scan-folder": "^1.0.0",
-    "showdown": "^1.8.7",
-    "tessla-visualizer": "git+https://gitlab.isp.uni-luebeck.de/tessla/tessla-visualizer.git",
     "yaml": "^1.0.0"
   },
   "consumedServices": {
