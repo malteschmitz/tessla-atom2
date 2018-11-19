@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/version-1.1.9-orange.svg" alt="Package version">
+  <img src="https://img.shields.io/badge/version-1.1.0-orange.svg" alt="Package version">
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@ The icons that are used in this package are provided by:
 - [ionicons](http://ionicons.com)
 - [Font Awesome](http://fontawesome.io)
 
-## Sidebar
+## Sidebar Docks
 
 <img align="left" src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/sidebar.png?raw=true">
 
@@ -35,24 +35,19 @@ The "C Functions" dock contains all C functions that where found in the C files 
 
 The "Output Streams" dock contains all outputs from the last performed action in a formatted way. All outputs are grouped by event name. Each event group contain all outputs as a list. The list entries contain the timestamp and the value. The list is ordered by the timestamp in such a way that the smallest timestamp is on top of the list and the biggest timestamp on the end. The lists are collapsed by default but can be expended by click. Buttons to collapse and expand all lists are on top of the dock.
 
-## Message Panel
+## Console Dock
 
-The message panel is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up into several streams each with its own reiter. The user can select which reiter should be active. Only the contents of the active reiter are displayed in the the panel body. If there were any messages that belong to an other stream the little notification badge in front of the reiter name will be incremented and colored depending on which reiter was updated. Switching the active reiter will clear the notification. The counter will be reset and the color will be set back to the original color.
-
-At the top of the message panel there is a resize handle which can be used to adjust the height of the panel and hence the amount of visible content in the active stream. On the top right there are three buttons. The buttons can be used to interact with the message panel.
-- The X button closes the message panel.
-- The garbage button clears the active content in the body of the message panel.
-- the write button opens a save dialog to save the content of the active stream.
+The console dock is located beneath the text editor and logs all information and messages that are shown to the user. The different types of messages are split up into several streams each with its own view. The user can switch between views by switching tabs in the console dock. The contents of the active stream can be cleared or saved to a user defined file by the two buttons in the top right corner of the view. It is also possible to filter the views contents by typing the search text into the input field.
 
 Each message belongs to at least one stream:
-- The `Console` stream contains all messages that were returned by the compiled C sources and the messages returned by TeSSLaServer.
-- The `Errors(C)` stream contains all messages returned by the clang compiler.
-- The `Errors(TeSSLa)` stream contains all messages returned by the TeSSLa compiler.
+- The `Console` stream contains all messages that were returned by the compiled C sources and the messages returned by TeSSLa or TeSSLa_RV.
+- The `Errors(C)` stream contains all error messages returned by the clang compiler.
+- The `Errors(TeSSLa)` stream contains all error messages returned by TeSSLa and TeSSLa_RV.
 - The `warnings` stream contains all messages that were displayed as notifications. The messages refer generally to wrong user input.
 - The `Log` stream contains all comands that were used by the package and the responses to these comands.
 
 <p align="center">
-  <img src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/message-panel.png?raw=true">
+  <img src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/console.png?raw=true">
 </p>
 
 ## Tool Bar
