@@ -59,7 +59,7 @@ The `Log` stream contains all comands that were used by the package and the resp
 
 <img align="right" src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/tool-bar.png?raw=true">
 
-To compile and run binaries compiled from source code the tool bar provides some buttons:
+There are several actions that can be triggered by using the toolbar. All of those actions are also available via the `TeSSLa2` submenu of `Packages`. Each button will trigger an dedicated global command. Those commands can also be triggered by external packages or during developer palette. A full list of available commands can be found in the Menu section below. The following description shows each icon and the actions they are connected to:
 
 <img align="left" width="34" src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/create-trace.png?raw=true"> Creates a trace file (`.input`) from all C files that are mentioned in the active target from your projects `targets.yml` file.
 
