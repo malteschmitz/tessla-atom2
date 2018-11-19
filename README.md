@@ -27,7 +27,7 @@ The icons that are used in this package are provided by:
 
 ## Sidebar
 
-<img align="left" src="https://github.com/dmlux/TeSSLa/blob/master/screenshots/sidebar.png?raw=true">
+<img align="left" src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/sidebar.png?raw=true">
 
 The sidebar is divided into two docks:
 
