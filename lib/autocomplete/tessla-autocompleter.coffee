@@ -156,6 +156,8 @@ module.exports=
         suggestions.push({ text: "else", type: "keyword" })
       if "then".startsWith(name)
         suggestions.push({ text: "then", type: "keyword" })
+      if "where".startsWith(name)
+        suggestions.push({ text: "where", type: "keyword" })
       if "in".startsWith(name)
         suggestions.push({ text: "in", snippet: "in ${1:var}", type: "keyword" })
       if "out".startsWith(name)

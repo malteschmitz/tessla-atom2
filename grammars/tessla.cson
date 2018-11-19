@@ -16,7 +16,7 @@
   },
   {
     'comment': 'Keywords'
-    'match': '\\b(if|then|else|include)\\b'
+    'match': '\\b(if|then|else|include|where)\\b'
     'name': 'keyword.control'
   },
   {
