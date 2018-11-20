@@ -57,6 +57,7 @@
   "package-deps": [
     "tool-bar",
     "flexible-panels",
-    "linter"
+    "linter",
+    "linter-gcc"
   ]
 }
