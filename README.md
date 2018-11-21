@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/version-1.1.3-orange.svg" alt="Package version">
+  <img src="https://img.shields.io/badge/version-1.1.4-orange.svg" alt="Package version">
 </p>
 
 <p align="center">
@@ -12,6 +12,8 @@
 ## Summary
 
 The `tessla2-atom` package extends Atom by IDE features. The package contains C and TeSSLa linting as well as TeSSLa syntax highlighting and TeSSLa autocompletion for keywords, constants, types and standard library functions. The GUI is extended by a console consisting of compiler information, output view, error views, a linting view and a log view. Two sidebar docks providing information about generated traces and a list of all found C functions within the project. The sidebar view also provides test case generation for all found C functions. A toolbar for all actions and commands is also supported. To manage build targets and files that belong to those targets a `targets.yml` file is created in the project directory by the `tessla2-docker` package.
+
+Implementation details for this package can be found [here](IMPLEMENTATION.md).
 
 ## Dependencies
 
