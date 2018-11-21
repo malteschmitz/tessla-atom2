@@ -29,3 +29,11 @@ The `tessla.coffee` file is responsible for the packages housekeeping. It manage
   * `consumeToolBar`: Gets a manager object to set up the toolbar for this package.
   * `provideLinter`: Passes back a `TeSSLaLinter` object to the base linter.
   * `provideAutocomplete`: Passes back a `TeSSLaAutocompleter` object to Autocomplete+
+  
+## lib/autcomplete
+
+All files within this directory are responsible for autocompletion within text editors. Currently it contains only a single file that defines the `TeSSLaAutocompleter` object. The Autocomplete+ package is a core package of atom and provides an infrastructure for custom autocompleters. A package can extend or replace the standard autocompleter in different contexts. See [Autocomplete+](https://github.com/atom/autocomplete-plus) for further information about the package.
+
+The `TeSSLaAutocompleter` has some properties that are used by Autocomplete+ to decide in which context it should use the suggestions provided by `TeSSLaAutocompleter`. The section _Defining A Provider_ in the [documentation](https://github.com/atom/autocomplete-plus/wiki/Provider-API#defining%20a%20provide) explaines all properties and their effects in detailed.
+
+The starting point for the autocompleter ist the `getSuggestions` method. It gets an object of options from Autocomplete+. The most important ones are `options.editor` which contains the actual [TextEditor](https://atom.io/docs/api/v1.2.1/TextEditor) and the `options.prefix` that contains the word the user just types in. Both are used to filter the relevant suggestions from the included files and the list of keywords, types and constants. The includes from the file the user is currently working in are resolved and contents of these files are considered for suggestions. If one of those files also contains includes those includes are ignored to make IO operations to read those files more efficient. To extract symbols like variables and functions from the included files the string with the file contents is parsed by regular expressions. For detailed information about the exact information see [TeSSLaAutocompleter](https://github.com/malteschmitz/tessla2-atom/blob/master/lib/autocomplete/tessla-autocompleter.coffee)
