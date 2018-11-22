@@ -46,9 +46,9 @@ All files within this directory are responsible for linting sources files of a g
 
 The linter first determines which files triggered the linting action. Afterwards the concrete file is passed to the TeSSLa compiler within the docker container. Since each project is mounted in its dedicated container the compiler can easily access the file and can compile it. To prevent a full compilation process the compiler is used in `--verify-only` mode which does not produce any output except errors and warnings. The full linting process is currently a little expensive due to the fact that the TeSSLa compiler is written and executed as Java byte and hence needs to start up a JVM.
 
-## controllers
+## lib/controllers
 
-The controllers directory contains classes that are responsible to process user interaction and global commands. Most of the source code in here translates the global compilation commands into build scripts using the docker container. The only file in here is `controller.coffe` and handles exactly the described events. Actions that are performed in the `Controller` class are:
+The controllers directory contains classes that are responsible to process user interaction and global commands. Most of the source code in here translates the global compilation commands into build scripts using the docker container. The only file in here is `controller.coffee` and handles exactly the described events. Actions that are performed in the `Controller` class are:
 
   * lock and unlock buttons in the tool bar
   * make sure a project is active
@@ -60,3 +60,23 @@ The controllers directory contains classes that are responsible to process user 
   * trigger Docker image pull request or container startup
   * set up split view and restore view elements
   * stop running process if user triggers corresponding event
+  
+## lib/utils
+
+The utility classes and functions are support functions to solve repeatingly arising problems. Files that are located in this direcory are
+
+  * `constants.coffee`: The constants file contains a collection of constant values like the name for the Docker container that contains the TeSSLa tools. Important constants like the registry address the actual name of the TeSSLa Docker image, if the package runs in dev mode and the URIs for the custom view components are stored in this file.
+  * `docker-mediator.coffee`: The `DockerMediator` is responsible for pulling the newest version of the image and the lifecycle of the TeSSLa Docker image.
+  * `file-reader.coffee`: The `FileReader` extracts C functions from C source files to enable visualization of these in the sidebar views.
+  * `logger.coffee`: The `Logger` class is a wrapper for `console.log` which uses the `debug` constant of `constants.coffee`. Is `debug` set to `yes` the logging will happen as expected otherwise the logging will be suppressed. This will suppress console pollution in production mode.
+  * `project.coffee`: The `Project` class represents a project directory. It will make sure that files like the `.gcc-flags.json` and `targets.yml` file are available. It also provides the contents of the `targets.yml` as well as the active target within this file.
+  * `utils.coffee`: Contains utility functions like checking if an object is set or if an object is of type function etc.
+  
+## lib/views
+
+The `lib/views` directory contains custom view elements. All view elements are dock views which means they have to satisfy a certain interface. Futher information about the interface and the behavior of docks can be found [here](http://blog.atom.io/2017/05/23/docks-deep-dive.html) and as mention in this article [here](https://flight-manual.atom.io/hacking-atom/sections/package-active-editor-info/). The view classes are:
+
+  * `sidebar-view.coffee`: The `SidebarView` is the sidebar view which shows C functions found in the C sources of the project. It uses the `FileReader` from `lib/utils` to find those C functions.
+  * `sidebar-view-element.coffe`: The `SidebarViewElement` represents the entries in the list of `SidebarView`
+  * `output-view.coffee`: The `OutputView` shows a formatted version of the the `tessla` output in the side dock.
+  * `output-view-element.coffee`: The `OutputViewElement` represents a list entry in the `OutputView`.
