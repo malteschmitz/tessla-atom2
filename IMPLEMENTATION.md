@@ -19,7 +19,19 @@ As in every one project the package.json contains detailed information about the
 
 ## grammars
   
-The grammars directory contains `.cson` files that define rules for certain file types. In our case there are two different grammar types: `TeSSLa` and `TeSSLa Trace`. For both of them there is a dedicated grammar `cson`: `tessla.cson` and `trace.cson`. The rules are defined by strings that represent regular expressions.
+The `grammars` directory contains `.cson` files that define rules for certain file types. In our case there are two different grammar types: `TeSSLa` and `TeSSLa Trace`. For both of them there is a dedicated grammar `cson`: `tessla.cson` and `trace.cson`. The rules are defined by strings that represent regular expressions. There is a good guide on how to write grammars in Atom [here](https://gist.github.com/Aerijo/b8c82d647db783187804e86fa0a604a1). The way the grammar files are written seems to be a little bit outdated but still work. The earlier mentioned guide provides detailed information for b
+  
+## keymaps
+
+The `keymaps` directory contains `.json` files that define hot keys for different contexts. Each hot key can trigger a global event that can be catched within the `lib/tessla.coffee` file.
+
+## menues
+
+The `menus` directory contains `.json` files that can extend existing menus for the application.
+
+## styles
+
+Contains `.less` files that can style custom components. Each view in `lib/views` can extend the GUI by custom elements with own CSS classes. Via styles within `styles` you can apply CSS styles to those classes.
   
 ## lib/tessla.coffee
 
