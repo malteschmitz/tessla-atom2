@@ -16,8 +16,12 @@ As in every one project the package.json contains detailed information about the
   * `consumedServices`: These are services provided by other packages that `tessla2` needs to work properly. Examples for such services are the toolbar and flexible panels.
   * `providedServices`: In contrast to consumed services these services are provided to other packages. A service in this context is just a function with their own context that can be passed to other packages. Examples for such services are Linter and Autocompleter. The base linter and Autocomplete+ are using these services exchange information between them and `tessla2`.
   * `package-deps`: A list of Atom package dependencies.
+
+## grammars
   
-## tessla.coffee
+The grammars directory contains `.cson` files that define rules for certain file types. In our case there are two different grammar types: `TeSSLa` and `TeSSLa Trace`. For both of them there is a dedicated grammar `cson`: `tessla.cson` and `trace.cson`. The rules are defined by strings that represent regular expressions.
+  
+## lib/tessla.coffee
 
 The `tessla.coffee` file is responsible for the packages housekeeping. It manages everything that happens before, on and during activation. All services that are consumed by this package are also specified within this file:
 
@@ -80,3 +84,4 @@ The `lib/views` directory contains custom view elements. All view elements are d
   * `sidebar-view-element.coffe`: The `SidebarViewElement` represents the entries in the list of `SidebarView`
   * `output-view.coffee`: The `OutputView` shows a formatted version of the the `tessla` output in the side dock.
   * `output-view-element.coffee`: The `OutputViewElement` represents a list entry in the `OutputView`.
+  * `toolbar.coffee`: Contains the setup for the toolbar
