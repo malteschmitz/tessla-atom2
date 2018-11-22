@@ -45,3 +45,18 @@ To decrease the number of fired autocompletion event events are only executed if
 All files within this directory are responsible for linting sources files of a given type. In our case the interesting file type is `.tessla` which contains tessla specifications. Therefore the `TeSSLaLinter` object has properties to specify on which file types it should be used and which action triggers linting. The most important part of the `TeSSLaLinter` object is the `onLint` function that describes what happens when linting is triggered.
 
 The linter first determines which files triggered the linting action. Afterwards the concrete file is passed to the TeSSLa compiler within the docker container. Since each project is mounted in its dedicated container the compiler can easily access the file and can compile it. To prevent a full compilation process the compiler is used in `--verify-only` mode which does not produce any output except errors and warnings. The full linting process is currently a little expensive due to the fact that the TeSSLa compiler is written and executed as Java byte and hence needs to start up a JVM.
+
+## controllers
+
+The controllers directory contains classes that are responsible to process user interaction and global commands. Most of the source code in here translates the global compilation commands into build scripts using the docker container. The only file in here is `controller.coffe` and handles exactly the described events. Actions that are performed in the `Controller` class are:
+
+  * lock and unlock buttons in the tool bar
+  * make sure a project is active
+  * make sure targets in the project are valid
+  * create trace file from project directory
+  * build and run C code from the project directory
+  * build C code and verify it by using the tessla specification from the project directory
+  * save all text editors before compiling anything
+  * trigger Docker image pull request or container startup
+  * set up split view and restore view elements
+  * stop running process if user triggers corresponding event
