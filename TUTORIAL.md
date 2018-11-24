@@ -44,3 +44,72 @@ Ok at this point everything seemed more than less self explanatory. We have alre
 | Docker Community Edition | Download Docker CE | 
 :-------------------------:|:-------------------------:
 ![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/docker-ce.png?raw=true)  |  ![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/download-docker.png?raw=true)
+
+To be able to run the TeSSLa container we first need to install Docker itself. The safest way to get a working Docker software on your device is to use the official installer from Docker CE. On some systems Docker can be installed using the package manager but in some cases this will end up in a mess since some of the dependencies are not installed directly with the application itself. Anyway go the website linked above and scroll down to the section "Download Docker Community Edition". Choose your OS and download the installer. After the download is done just double click it and install it. If there were no problems the Docker deamon should run in the background now. Now you are able to run Docker containers.
+
+
+| Docker Running | Load TeSSLa Image | 
+:-------------------------:|:-------------------------:
+![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/docker-running.png?raw=true)  |  ![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/load-tessla-image.png?raw=true)
+
+The next step is getting the TeSSLa container. So how do we get this TeSSLa container? There are two ways to get the container. First you can pull the latest version of the TeSSLa image using the atom package. The tool bar provides buttons to trigger those events. On package activation the latest version of the image is pulled and the corresponding container started any way. The other way to pull the image hosted on [rv.isp.uni-luebeck.de](http://rv.isp.uni-luebeck.de/tessla/tessla-docker.zip) and start the container is by using the following commands:
+
+```
+docker rmi registry.mlte.de/isp/tessla-docker  
+docker load -i registry.mlte.de/isp/tessla-docker  
+```
+
+The first command removes other images named 'registry.mlte.de/isp/tessla-docker' that had already been loaded. The second one will load the TeSSLa image so Docker is able to run this image inside of a container. To execute the second command it is important to navigate to the directory that contains the TeSSLa image. When you execute the command in the listing above make sure you are in the directory the TeSSLa image is located in. Now the IDE is able to start a container and execute all commands. If there were no problems so far you are done with setup. All components that are needed are installed and ready to use. The next step is to try it out.
+
+### An example application
+
+In this section we will create an example C application and a TeSSLa specification to check if the application meets the specification. Before we start writing code we have to set up a project directory. Open Atom if it is not open yet and go to File – Add Project Folder…. Choose a directory where the new project should be located and press OK.
+
+Now lets add some source files to the newly created project directory. Therefore you can add a new file by right click on the directory in the tree view on the left side of Atom or by using the file menu. We will first create a new C file named sub_add.c. Now put the following content into the C file:
+
+```C
+int add(int x, int y) {
+  return x+y;
+}
+
+int sub(int x, int y) {
+  return x-y;
+}
+
+int main() {
+  int sum = 0;
+  for (int i = 0; i &lt; 5; i++) {
+    sum = add(sum, sub(i,2));
+  }
+  sum = add(sum, add(21,21));
+  for (int i = 0; i &lt; 5; i++) {
+    sum = add(sum, sub(i,2));
+  }
+}
+```
+
+Lets try to understand what the code is actually doing. The first function obviously calculates the sum of two given integers x and y while the second function is calculating the difference between two given integers x and y. The main function is just a starting point for the actual algorithm that uses the two functions defined before. The algorithm just defines a sum variable that will hold a value which is modified by the following two for loops. The for loops are just invoking the add and sub methods. We do not need to discuss about the intellectual value of this code since it is just some code that can easily be tested against a specification. OK, the C application is ready to use. Time to create a specification for our code…
+
+The files containing TeSSLa specifications are files having the `.tessla` extension. Such a file is currently missing in our project so create a new file called `spec.tessla.` Enter the following lines of code for the specification:
+
+```
+include "/usr/local/opt/tessla_rv/streams.tessla"
+include "stdlib.tessla"
+
+define add_event : Events
+
+ := function_calls("add")
+define sub_event : Events
+
+ := function_calls("sub")
+
+define add_count := eventCount(add_event)
+define sub_count := eventCount(sub_event)
+define diff := sub(add_count, sub_count)
+
+define error := geq(diff, literal(2))
+
+out diff
+out error
+```
+
