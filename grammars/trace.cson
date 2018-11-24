@@ -11,6 +11,11 @@
     'name': 'punctuation.string'
   },
   {
+    'comment': 'Constants'
+    'match': '\\b(true|false)\\b'
+    'name': 'constant.language'
+  },
+  {
     'comment': 'Time unit'
     'match': '(\\$timeunit)'
     'name': 'keyword.other'

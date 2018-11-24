@@ -78,11 +78,11 @@ int sub(int x, int y) {
 
 int main() {
   int sum = 0;
-  for (int i = 0; i &lt; 5; i++) {
+  for (int i = 0; i <= 5; i++) {
     sum = add(sum, sub(i,2));
   }
   sum = add(sum, add(21,21));
-  for (int i = 0; i &lt; 5; i++) {
+  for (int i = 0; i <= 5; i++) {
     sum = add(sum, sub(i,2));
   }
 }
@@ -90,23 +90,96 @@ int main() {
 
 Lets try to understand what the code is actually doing. The first function obviously calculates the sum of two given integers x and y while the second function is calculating the difference between two given integers x and y. The main function is just a starting point for the actual algorithm that uses the two functions defined before. The algorithm just defines a sum variable that will hold a value which is modified by the following two for loops. The for loops are just invoking the add and sub methods. We do not need to discuss about the intellectual value of this code since it is just some code that can easily be tested against a specification. OK, the C application is ready to use. Time to create a specification for our code…
 
-The files containing TeSSLa specifications are files having the `.tessla` extension. Such a file is currently missing in our project so create a new file called `spec.tessla.` Enter the following lines of code for the specification:
+The files containing TeSSLa specifications are files having the `.tessla` extension. Such a file is currently missing in our project so create a new file called `sub_add.tessla.` Enter the following lines of code for the specification:
 
 ```Ruby
 include "/usr/local/opt/tessla_rv/streams.tessla"
 include "stdlib.tessla"
 
-define add_event : Events := function_calls("add")
-define sub_event : Events := function_calls("sub")
+def add_event := function_call("add")
+def sub_event := function_call("sub")
 
-define add_count := eventCount(add_event)
-define sub_count := eventCount(sub_event)
-define diff := sub(add_count, sub_count)
+def add_count := eventCount(add_event, sub_event)
+def sub_count := eventCount(sub_event, add_event)
+def diff := add_count - sub_count
 
-define error := geq(diff, literal(2))
+def error := diff >= 2
 
 out diff
 out error
 ```
 
 Lets figure out what this specification describes. The first two lines are defining events occurring in the execution of our program. The events we are looking for are function calls as you might guess when you are looking to the right side of the assignment. The first event represents the add function calls and the second event represents the sub function calls. After that we define two variables each of them contains a number representing how often the respective functions were called. Then we just form the difference between both values to get a comparison value. The last line containing a define checks if the difference of both function call counters is greater or equal two. The last two lines defining outputs for the values of diff and error. In other words: the specification says there have to be at least 2 more add calls then sub calls.
+
+The application and the specification are ready… time to check if our program meets the specification. If the TeSSLa2-Atom-Package was not already started we will do this now. Go to `Packages -> TeSSLa2 -> Activate` or hit `CMD+Shift+T`. If one of the two files we just created is open while activating the package a split view should be set up. On the left side of the split view all C and Trace files of the current project should be opened. On the right side all specification files should be opened. Also a toolbar should be appeared on the right side of the workspace. The toolbar contains all buttons we need for testing our example.
+
+The most important button in the toolbar is the third bottom from top (the circled dot) which either will compile the C file from the project into assembly or use the Trace file from the `targets.yml`. The assembly then will be modified by linking the libFunctions.so into the assembly code and once this is done the clang makes an executable binary out of the resulting file. The linked libFunctions.so ensures that a log file is generated while executing the binary. The log file is shown in the listing below. In each line first the time of the event appears then the actual event followed by the value of this event is mentioned. The value is seperated from the event name by a equals sign.
+
+This log file contains timestamps that belong to certain function call. After that the IDE takes the TeSSLa specification file and hand it on to the compiler which creates an so called AST (Abstrakt Syntrax Tree) from it. On the last stage the log file and the specification AST are passed to the evaluation engine that is doing an evaluation.
+
+```
+$timeunit = "ns"
+0: error = false
+0: diff = 0
+16140951534358: error = false
+16140951534358: diff = -1
+16140951690358: error = false
+16140951690358: diff = 1
+16140951921058: error = false
+16140951921058: diff = -1
+16140952037258: error = false
+16140952037258: diff = 1
+16140952259258: error = false
+16140952259258: diff = -1
+16140952367458: error = false
+16140952367458: diff = 1
+16140952589158: error = false
+16140952589158: diff = -1
+16140952696858: error = false
+16140952696858: diff = 1
+16140952919358: error = false
+16140952919358: diff = -1
+16140953037658: error = false
+16140953037658: diff = 1
+16140953262658: error = false
+16140953262658: diff = -1
+16140953373458: error = false
+16140953373458: diff = 1
+16140953589658: error = true
+16140953589658: diff = 2
+16140953699458: error = true
+16140953699458: diff = 3
+16141147016958: error = false
+16141147016958: diff = -1
+16141147125058: error = false
+16141147125058: diff = 1
+16145105461158: error = false
+16145105461158: diff = -1
+16145593120858: error = false
+16145593120858: diff = 1
+16146002629758: error = false
+16146002629758: diff = -1
+16146002757958: error = false
+16146002757958: diff = 1
+16146326424158: error = false
+16146326424158: diff = -1
+16146326539058: error = false
+16146326539058: diff = 1
+16146702108958: error = false
+16146702108958: diff = -1
+16147007532458: error = false
+16147007532458: diff = 1
+16147007892358: error = false
+16147007892358: diff = -1
+16147310457658: error = false
+16147310457658: diff = 1
+```
+
+To execute all files in the project including the TeSSLa specification just hit `Cmd+T`. Some pop-ups showing successful steps. After compilation verification is done the result will be formatted in the `Formatted Output View` of the sidebar.
+
+
+<p align="center">
+  <img src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/verify-project-example.png?raw=true">
+</p>
+
+The toolbar also offers the functionality to compile and execute C code without considering the related specification file to make it easier to develop and test the actual application first before trying to run against a specification. So all steps are done that are needed to set up a TeSSLa environment and take it in use. If there are still some questions that were not answered in this tutorial we recommend you to take a closer look on the links that were mentioned at the beginning of this tutorial. The TeSSLa-Atom-Package documentation will describe the GUI and the behavior of the package in detail and the other links may clear up questions about the compiler and other components that are used by the IDE. Further information about the `targets.yml` can be found in the [README](README.md) document.
