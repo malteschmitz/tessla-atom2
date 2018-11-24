@@ -92,16 +92,12 @@ Lets try to understand what the code is actually doing. The first function obvio
 
 The files containing TeSSLa specifications are files having the `.tessla` extension. Such a file is currently missing in our project so create a new file called `spec.tessla.` Enter the following lines of code for the specification:
 
-```
+```Ruby
 include "/usr/local/opt/tessla_rv/streams.tessla"
 include "stdlib.tessla"
 
-define add_event : Events
-
- := function_calls("add")
-define sub_event : Events
-
- := function_calls("sub")
+define add_event : Events := function_calls("add")
+define sub_event : Events := function_calls("sub")
 
 define add_count := eventCount(add_event)
 define sub_count := eventCount(sub_event)
@@ -113,3 +109,4 @@ out diff
 out error
 ```
 
+Lets figure out what this specification describes. The first two lines are defining events occurring in the execution of our program. The events we are looking for are function calls as you might guess when you are looking to the right side of the assignment. The first event represents the add function calls and the second event represents the sub function calls. After that we define two variables each of them contains a number representing how often the respective functions were called. Then we just form the difference between both values to get a comparison value. The last line containing a define checks if the difference of both function call counters is greater or equal two. The last two lines defining outputs for the values of diff and error. In other words: the specification says there have to be at least 2 more add calls then sub calls.
