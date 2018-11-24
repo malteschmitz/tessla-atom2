@@ -1,5 +1,8 @@
+## 1.1.0
+Features:
+
 ## 1.4.2 (June 12, 2017)
-Buf-fixes:
+Bug-fixes:
   - removed linter form deps
 
 Features:
