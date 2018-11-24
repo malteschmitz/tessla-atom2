@@ -25,3 +25,11 @@ Atom is a text editor that is based on the Electron framework and hence web base
 <p align="center">
   <img src="https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/screenshot.png?raw=true">
 </p>
+
+Now lets start with installation stuff. First you have to [download](https://atom.io/download/mac) the latest version of Atom. Therefore visit [Atom.io](https://atom.io). Directly on the main page there is a 'download' button that will start a download of Atom suitable for the OS you are working on. The actual application is packed into a zip archive. So just unzip the archive with a tool of your choice. When you are working on MacOS you should move the unpacked application to your local applications directory.
+
+Now that we have installed Atom we are taking care of the TeSSLa package. The TeSSLa package adds IDE like functions to Atom allowing developers to use all tools like the TeSSLa compiler, clang and the TeSSLa evaluation engine from within Atom. For a developer it is a more comfortable way to verify C code using TeSSLa since all the different tools and commands do not have to be used manually. There are also some helping components that are added to the GUI. For Example a console like component that displays the C programs output and all commands that were executed by the TeSSLa package as well as the responses to these commands. So how do we get this package properly installed on our system?
+
+preferences                | install tessla2 
+:-------------------------:|:-------------------------:
+![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/preferences.png?raw=true)  |  ![](https://github.com/malteschmitz/tessla2-atom/blob/master/screenshots/install.png?raw=true)
